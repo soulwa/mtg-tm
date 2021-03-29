@@ -6,6 +6,22 @@
 (defun utm-symp (x)
   (member x *alphabet*))
 
+;;listof symbol
+(defun utm-losp (x)
+  (cond ((endp x) T)
+        ((consp x) (and (utm-symp (car x))
+                        (utm-los (cdr x))))))
+
+(defun append (x y)
+  (cond ((endp x) y)
+        ((consp x) (cons (car x) (append (cdr x) y)))))
+
+(defun removen (n x)
+  (if (equal n 0)
+      x
+      (remove-n (- 1 n) (cdr x))))
+
+
 ;; because rogozhin TMs "eat" tapes left to right
 ;; no need for a half-tape
 
@@ -16,14 +32,13 @@
                         (utm-tapep (cdr x))))))
 
 ;; production function
-;; a cons of two utm-symps, left is input
-;; we don't lambda-ize cuz A CL2
+;; a cons of a symp to a los-symp
 
 (defun utm-funcp (x)
   (and (consp x)
        (= (length x) 2)
        (utm-symp (car x))
-       (utm-symp (car (cdr x)))))
+       (utm-losp (car (cdr x)))))
 
 ;; a list or "set" of prod-funcs
 ;; I don't use sets for now because they suck
@@ -31,6 +46,27 @@
   (cond ((endp x) T)
         ((consp x) (and (utm-funcp (car x))
                         (utm-funcsp (cdr x))))))
+
+;; does this utm-func x apply to sym y
+(defun utm-func-appliesp (x y)
+  (and (utm-funcp x)
+       (utm-symp y)
+       (equal (car x) y)))
+
+;; apply func
+(defun utm-func-apply (x)
+  (car (cdr x)))
+
+;; return the applicable func from a set
+;; assumes such a func exists
+(defun utm-funcs-applicable (x y)
+  (cond ((endp x) 'ERROR)
+        ((consp x) (if (utm-func-appliesp (car x) y)
+                       (car x)
+                       (utm-funcs-applicable (cdr x) y)))))
+
+
+
 
 ;; a tag system has a tape,
 ;; deletion number, and prod. function
@@ -44,3 +80,20 @@
 
 ;; TODO:
 ;; write the interpreter
+;; test the bits of the interpreter written
+;;
+
+;; x is a tag system
+(defun utm-exec (x)
+  (if (< (length (car (cdr (cdr x)))) (car x))
+      (car (cdr (cdr x))) ;; tape smaller than m (or empty)
+      (utm-step x)))
+
+;; step the tape
+;; find the applicable func in the tag system
+;; using the first element of the tape and the set of production functions
+;; append the application of that function to the end
+;; delete the deletion number from the head
+
+(defun utm-step (x)
+  (remove-n (car x) (append (car (cdr (cdr x))) (utm-apply (utm-funcs-applicable (car (cdr x)) (car (car (cdr (cdr x)))))))))
