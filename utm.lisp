@@ -10,13 +10,15 @@
 (defun utm-losp (x)
   (cond ((endp x) T)
         ((consp x) (and (utm-symp (car x))
-                        (utm-los (cdr x))))))
-
+                        (utm-losp (cdr x))))))
+#|
 (defun append (x y)
   (cond ((endp x) y)
         ((consp x) (cons (car x) (append (cdr x) y)))))
+|#
 
-(defun removen (n x)
+;; needs a proof
+(defun remove-n (n x)
   (if (equal n 0)
       x
       (remove-n (- 1 n) (cdr x))))
