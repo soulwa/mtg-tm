@@ -1,5 +1,9 @@
 ;; an implementation of a Rogozhin (2,18) UTM
-;;
+
+
+(set-irrelevant-formals ok t)
+(set-ignore-ok :warn)
+
 (defconst *alphabet*
   '(a b c d e f g h i j k l m n o p q r))
 
