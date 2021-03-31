@@ -1,16 +1,20 @@
 ;; an implementation of a Rogozhin (2,18) UTM
 
-
-(set-irrelevant-formals ok t)
-(set-ignore-ok :warn)
-
 (defconst *alphabet*
   '(a b c d e f g h i j k l m n o p q r))
+  
+(defconst *even-huh-tag-sys*
+  '(2 ( (a ()) (b (b)) (c (b c))) (c c a a a a)))
+  
+
+
 
 (defun utm-symp (x)
   (member x *alphabet*))
 
 ;;listof symbol
+;;not programmatically different from utm-tape- but this one
+;;is used for production functions
 (defun utm-losp (x)
   (cond ((endp x) T)
         ((consp x) (and (utm-symp (car x))
@@ -21,12 +25,10 @@
         ((consp x) (cons (car x) (append (cdr x) y)))))
 |#
 
-;; needs a proof
 (defun remove-n (n x)
-  (if (equal n 0)
+  (if (zp n)
       x
-      (remove-n (- 1 n) (cdr x))))
-
+      (remove-n (- n 1) (cdr x))))
 
 ;; because rogozhin TMs "eat" tapes left to right
 ;; no need for a half-tape
@@ -80,26 +82,23 @@
 (defun tag-sysp (x)
   (and (consp x)
        (equal (length x) 3)
-       (natp (car x))
-       (utm-funcsp (car (cdr x)))
-       (utm-tapep (car (cdr (cdr x))))))
-
-;; TODO:
-;; write the interpreter
-;; test the bits of the interpreter written
-;;
-
-;; x is a tag system
-(defun utm-exec (x)
-  (if (< (length (car (cdr (cdr x)))) (car x))
-      (car (cdr (cdr x))) ;; tape smaller than m (or empty)
-      (utm-step x)))
+       (natp (first x))
+       (utm-funcsp (second x))
+       (utm-tapep (third x))))
 
 ;; step the tape
 ;; find the applicable func in the tag system
 ;; using the first element of the tape and the set of production functions
 ;; append the application of that function to the end
 ;; delete the deletion number from the head
-
 (defun utm-step (x)
-  (remove-n (car x) (append (car (cdr (cdr x))) (utm-apply (utm-funcs-applicable (car (cdr x)) (car (car (cdr (cdr x)))))))))
+  (list (first x) (second x) (remove-n (first x) (append (third x) (utm-func-apply (utm-funcs-applicable (second x) (car (third x))))))))
+
+;; x is a tag system
+(defun utm-exec (x)
+  (if (< (length (car (cdr (cdr x)))) (car x))
+      (car (cdr (cdr x))) ;; tape smaller than m (or empty)
+      (utm-exec (utm-step x))))
+
+
+
