@@ -96,7 +96,7 @@
 
 ;; x is a tag system
 (defun utm-exec (x)
-  (if (< (length (car (cdr (cdr x)))) (car x))
+  (if (< (length (third y)) (first x))
       (car (cdr (cdr x))) ;; tape smaller than m (or empty)
       (utm-exec (utm-step x))))
 
