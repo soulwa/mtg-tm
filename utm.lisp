@@ -105,50 +105,48 @@
 ;; inital tape setup specified by rogozhin's model?:
 
 (defconst *rogozhin-alphabet*
-  (1 1> 1< 1>1 1<1 b b> b< b>1 b<1 b2 b3 c c> c< c>1 c<1 c2))
+  '(1 1> 1< 1>1 1<1 b b> b< b>1 b<1 b2 b3 c c> c< c>1 c<1 c2))
 
 (defconst *rogozhin-states*
   '(q1 q2))
 
 (defconst *utm-2-18-prog*
-  '((q1
-      (1 c2 L q1)
-      (1> 1<1 R q1)
-      (1< c2 L q1)
-      (1>1 1 R q1)
-      (1<1 1>1 L q1)
-      (b b< R q1)
-      (b> b<1 R q1)
-      (b< b L q1)
-      (b>1 b R q1)
-      (b<1 b>1 L q1)
-      (b2 b3 L q2)
-      (b3 b>1 L q2)
-      (c 1> L q2)
-      (c> c< R q1)
-      (c< c>1 L q1)
-      (c>1 c<1 L q1)
-      (c<1 HALT nil nil)
-      (c2 1< R q1))
-    (q2
-      (1 1< R q2)
-      (1> 1< R q2)
-      (1< 1> L q2)
-      (1>1 1<1 R q2)
-      (1<1 1 L q2)
-      (b b2 R q1)
-      (b> b< R q2)
-      (b< b> L q2)
-      (b>1 b<1 R q2)
-      (b<1 b> L q2)
-      (b2 b R q1)
-      (b3 b<1 R q2)
-      (c c< R q2)
-      (c> c< R q2)
-      (c< c> L q2)
-      (c>1 c2 R q2)
-      (c<1 c2 L q1)
-      (c2 c L q2))))
+  '((q1 1 c2 L q1)
+    (q1 1> 1<1 R q1)
+    (q1 1< c2 L q1)
+    (q1 1>1 1 R q1)
+    (q1 1<1 1>1 L q1)
+    (q1 b b< R q1)
+    (q1 b> b<1 R q1)
+    (q1 b< b L q1)
+    (q1 b>1 b R q1)
+    (q1 b<1 b>1 L q1)
+    (q1 b2 b3 L q2)
+    (q1 b3 b>1 L q2)
+    (q1 c 1> L q2)
+    (q1 c> c< R q1)
+    (q1 c< c>1 L q1)
+    (q1 c>1 c<1 L q1)
+    (q1 c<1 HALT nil nil)
+    (q1 c2 1< R q1)
+    (q2 1 1< R q2)
+    (q2 1> 1< R q2)
+    (q2 1< 1> L q2)
+    (q2 1>1 1<1 R q2)
+    (q2 1<1 1 L q2)
+    (q2 b b2 R q1)
+    (q2 b> b< R q2)
+    (q2 b< b> L q2)
+    (q2 b>1 b<1 R q2)
+    (q2 b<1 b> L q2)
+    (q2 b2 b R q1)
+    (q2 b3 b<1 R q2)
+    (q2 c c< R q2)
+    (q2 c> c< R q2)
+    (q2 c< c> L q2)
+    (q2 c>1 c2 R q2)
+    (q2 c<1 c2 L q1)
+    (q2 c2 c L q2)))
 
 (defun utm-symbolp (x)
   (or (member x *rogozhin-alphabet*) (equal x 'HALT)))
@@ -161,7 +159,7 @@
 
 (defun utm-instrp (x)
   (and
-    (tlp x)
+    (true-listp x)
     (= (length x) 4)
     (utm-symbolp (first x))
     (utm-symbolp (second x))
@@ -170,13 +168,13 @@
 
 (defun utm-loinstrp (x)
   (cond
-    ((endp x) t))
+    ((endp x) t)
     ((consp x) (and (utm-instrp (first x))
-                    (utm-loinstrp (rest x)))))
+                    (utm-loinstrp (rest x))))))
 
 (defun utm-progp (x)
   (and
-    (tlp x)
+    (true-listp x)
     (= (length x) 2)
     (utm-statep (first x))
     (utm-loinstrp (second x))))
@@ -184,40 +182,41 @@
 ;; we *will* need to check specifically for the 2-18 machine, as that's the
 ;; only valid utm-- might change our theorems somewhat?
 
-;; get the next instruction for a utm, given a symbol and instructions
-(defun instr-sym (sym instrs)
-  (cond
-    ((endp progm) nil) ;; error case
-    ((equal sym (first (first instrs))) (first instrs))
-    (t (instr sym (rest instrs)))))
-
-;; get the next instruction for a utm, given a symbol, state, and a program
-(defun instr (sym state progm)
-  (cond
-    ((endp progm) nil) ;; HALT symbol
-    ((equal state (first (first progm))) (instr-sym (sym (first progm))))
-    (t (instr (sym state (rest progm))))))
-
-;; definition of tape based on tmi-reductions.lisp
-
 ;; gets the head of the tape, or a new blank symbol
 (defun sym (x)
   (if (consp x) (first x) '1<))
 
+;; get the next instruction for a utm, given a symbol, state, and a program
+(defun instr (sym st progm)
+  (cond
+    ((endp progm) nil) ;; error
+    ((and
+      (equal st (first (first progm)))
+      (equal sym (second (first progm))))
+     (sym (first progm)))
+    (t (instr sym st (rest progm)))))
+
+;; definition of tape based on tmi-reductions.lisp
+
 (defun half-tapep (x)
   (cond
     ((endp x) nil)
-    ((consp x) (and (utm-symbolp x)
-                    (half-tapep x)))))
+    ((consp x) (and (utm-symbolp (first x))
+                    (half-tapep (rest x))))))
 
 (defun tapep (x)
   (and (consp x)
     (half-tapep (first x))
     (half-tapep (rest x))))
 
+(defun rev1 (x a)
+  (cond
+    ((endp x) a)
+    ((consp x) (rev1 (rest x) (cons (first x) a)))))
+
 (defun show-tape (tape)
   (cond ((consp tape)
-         (reverse (car tape)
+         (rev1 (car tape)
                   (cons '[ (cons (sym (cdr tape)) (cons '] (cdr (cdr tape)))))))
         (t nil)))
 
@@ -246,11 +245,11 @@
     ((zp n) nil) 
     ;; the symbol appears in the progm
     ((instr (tape-head tape) st tm) 
-      (let ((inst (instr (tape-head tape)) st tm))
-      (utmi (fourth inst)
-            (new-tape (second inst) (third inst) tape)
-            tm
-            (- n 1))))
+     (let ((inst (instr (tape-head tape) st tm)))
+       (utmi (fourth inst)
+             (new-tape (second inst) (third inst) tape)
+             tm
+             (- n 1))))
     ;; the symbol doesn't appear: must be HALT symbol, as it doesn't have lookup
     ;; not sure if halting will be provable here, if the HALT symbol is included
     ;; in utm-symbolp
