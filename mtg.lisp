@@ -14,7 +14,6 @@
 (defun ccolorp (x)
   (member x *tokencolor*))
 
-;; example creature
 (defconst *aetherborn-ex*
   '(aetherborn green 2 2))
 
@@ -36,53 +35,94 @@
        (ctypep (first x))
        (ccolorp (second x))
        (natp (third x))
-       (natp (fourth x))
-       (boolp (fifth x))))
+       (natp (fourth x))))
 
 ;; a collection of creatures, where order does not matter
 (defun creaturesp (x)
   (cond ((endp x) T)
-        ((cons x) (and (creaturep (first x))
+        ((consp x) (and (creaturep (first x))
                        (creaturesp (rest x))))))
-                       
-;; our functions are done with an Artificial Evolution'd, Glamerdye'd Rotlung Reanimator
-;; or xathrid necromancer
 
-;; thus a rr has an input creature (the one that dies, of any color)
-;; and an output creature with some color
+;; rotlung renanimator- writes symbols when infest causes
+;; the head to die 
 (defun rotlungp (x)
-  (and (= (length x) 2)
-       (ctypep (first x))
-       (creaturep (second x))
-       (boolp (third x))))
+  (and (= (length x) 4)
+       (booleanp (first x))
+       (ctypep (second x))
+       (creaturep (third x))
+       (booleanp (fourth x))))
 
-;; list of rotlung, list of functions
 (defun rotlungsp (x)
   (cond ((endp x) T)
         ((consp x) (and (rotlungp (first x))
                         (rotlungsp (rest x))))))
 
-;; find the rotlung applicable to some creature
-(defun applicable (x c)
+(defun applicable (x c st)
   (cond ((endp x) 'error)
-        ((consp x) (if (equal (first (first x)) c)
-                     (second (first x))
-                     (applicable (rest x) c)))))
+        ((consp x) (if (and (equal (second (first x)) c)
+                            (equal (first (first x)) st))
+                     (third (first x))
+                     (applicable (rest x) c st)))))
 
 
 ;; identifies the unique two-two creature from a list of creatures
 ;; essentially: finds the head of the tape
-(defun two-two (x)
+(defun findhead (x)
   (cond ((endp x) 'error)
         ((consp x) (if (and (= 2 (third (first x)))
                             (= 2 (fourth (first x))))
                      (first x)
-                     (two-two (rest x))))))
+                     (findhead (rest x))))))
   
 
 ;; move the computation
 ;; find the appropriate rotlung, spawn its result, killt he creature 
-(defun infest (x)
-  (let ((head (two-two x)))
-  (remove head (append (list (applicable x head)) x))))
+(defun infest (x st)
+  (let ((head (findhead x)))
+  (remove head (append (list (applicable x (second head) st)) x))))
+
+;; move left or right
+;; cast beam on creatures
+;; color is to be moved from
+(defun beam (x color)
+  (cond ((endp x) nil)
+        ((consp x) (if (equal color (second (first x)))
+                     (cons (list (first (first x))
+                                 (second (first x))
+                                 (+ 2 (third (first x)))
+                                 (+ 2 (fourth (first x))))
+                           (beam (rest x) color))
+                     (cons (first x) (beam (rest x) color))))))
+                   
+
+;; where x and y are states
+(defun victoryp (x y)
+  (equal x y))
+
+;; cast snuffers, dealing -1 -1 to all
+(defun snuffers (x)
+  (cond ((endp x) nil)
+        ((consp x) (cons (list (first (first x))
+                               (second (first x))
+                               (- (third (first x)) 1)
+                               (- (fourth (first x)) 1))
+                         (snuffers (rest x))))))
+
+;; need to prove termination
+(defun mtgi (st tape tm n)
+  (declare (xargs :measure (nfix n)))
+  (let ((advanced (infest (beam tape st) st)))
+    (cond ((zp n) tape)
+          ((victoryp advanced tape) nil)
+          ((applicable tm (findhead tape) st)
+           (let ((rlg (applicable tm (findhead tape) st)))
+             (mtgi (fourth rlg)
+                   advanced
+                   tm
+                   (- n 1))))
+          (t nil))))
+    
+
+
+
 
