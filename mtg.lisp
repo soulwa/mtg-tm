@@ -1,7 +1,6 @@
 ;; An ACL2 implementation of an MTGTM.
 ;; https://arxiv.org/abs/1904.09828  
 
-;; TODO: better variable names
 ;; MTGTM creature types.
 (defconst *types*
           '(aetherborn basilisk cephalid demon elf faerie giant harpy illusion
