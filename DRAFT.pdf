@@ -1,0 +1,1085 @@
+%PDF-1.3
+1 0 obj
+<< /Type /Catalog
+/Outlines 2 0 R
+/Pages 3 0 R >>
+endobj
+2 0 obj
+<< /Type /Outlines /Count 0 >>
+endobj
+3 0 obj
+<< /Type /Pages
+/Kids [6 0 R
+26 0 R
+29 0 R
+43 0 R
+45 0 R
+47 0 R
+49 0 R
+51 0 R
+]
+/Count 8
+/Resources <<
+/ProcSet 4 0 R
+/Font << 
+/F1 8 0 R
+/F2 9 0 R
+/F3 10 0 R
+/F4 11 0 R
+/F5 28 0 R
+>>
+>>
+/MediaBox [0.000 0.000 595.280 841.890]
+ >>
+endobj
+4 0 obj
+[/PDF /Text ]
+endobj
+5 0 obj
+<<
+/Creator (DOMPDF)
+/CreationDate (D:20210415014723+00'00')
+/ModDate (D:20210415014723+00'00')
+>>
+endobj
+6 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Annots [ 12 0 R 14 0 R 16 0 R 18 0 R 20 0 R 22 0 R 24 0 R ]
+/Contents 7 0 R
+>>
+endobj
+7 0 obj
+<<
+/Length 9169 >>
+stream
+
+0.000 0.000 0.000 rg
+BT 34.016 768.985 Td /F1 24.0 Tf  [(Work thus far)] TJ ET
+BT 34.016 735.797 Td /F2 12.0 Tf  [(We aim to verify the proof of Magic the Gathering's \(henceforth MTG\) Turing completeness using ACL2. )] TJ ET
+BT 34.016 721.541 Td /F2 12.0 Tf  [(As such, we've been working on implementing robust models of Rogozhin's UTM\(2,18\) and the Magic the )] TJ ET
+BT 34.016 707.285 Td /F2 12.0 Tf  [(Gathering Turing machine suitable for proof work in ACL2.)] TJ ET
+BT 34.016 672.387 Td /F1 18.0 Tf  [(The UTM)] TJ ET
+BT 34.016 641.765 Td /F2 12.0 Tf  [(Our implementation of UTM\(2,18\) is similar to that of J Strother Moore's 4-tuple Rogers Turing machine, )] TJ ET
+BT 34.016 627.509 Td /F2 12.0 Tf  [(used in his proof that the M1 language is Turing complete, with some key differences. Notably, instead of 4-)] TJ ET
+BT 34.016 613.253 Td /F2 12.0 Tf  [(tuple instructions, we are forced to use 5-tuple instructions: UTM\(2,18\) is able to both write a symbol and )] TJ ET
+BT 34.016 598.997 Td /F2 12.0 Tf  [(move the head in a single instruction, rather than just one of these operations at a time. We therefore need to )] TJ ET
+BT 34.016 584.741 Td /F2 12.0 Tf  [(perform both of these operations when we produce a new tape, which is also modeled based on the tape )] TJ ET
+BT 34.016 570.485 Td /F2 12.0 Tf  [(Moore used.)] TJ ET
+BT 34.016 544.229 Td /F2 12.0 Tf  [(Our UTM interpreter, )] TJ ET
+BT 141.320 544.229 Td /F3 12.0 Tf  [(utmi)] TJ ET
+BT 170.120 544.229 Td /F2 12.0 Tf  [(, performs )] TJ ET
+BT 222.440 544.229 Td /F3 12.0 Tf  [(n)] TJ ET
+BT 229.640 544.229 Td /F2 12.0 Tf  [( operations on a tape with the Turing machine specified by the rules )] TJ ET
+BT 34.016 529.973 Td /F2 12.0 Tf  [(in )] TJ ET
+BT 46.352 529.973 Td /F3 12.0 Tf  [(*utm-2-18*)] TJ ET
+BT 118.352 529.973 Td /F2 12.0 Tf  [(. It returns )] TJ ET
+BT 171.008 529.973 Td /F3 12.0 Tf  [(nil)] TJ ET
+BT 192.608 529.973 Td /F2 12.0 Tf  [( if the tape has run for )] TJ ET
+BT 301.580 529.973 Td /F3 12.0 Tf  [(n)] TJ ET
+BT 308.780 529.973 Td /F2 12.0 Tf  [( steps without terminating, or if the tape has )] TJ ET
+BT 34.016 515.717 Td /F2 12.0 Tf  [(encountered a )] TJ ET
+BT 103.988 515.717 Td /F3 12.0 Tf  [(HALT)] TJ ET
+BT 132.788 515.717 Td /F2 12.0 Tf  [( symbol. On a Rogozhin UTM, this is equivalent to the head moving past the leftmost )] TJ ET
+BT 34.016 501.461 Td /F2 12.0 Tf  [(symbol written on the tape, )] TJ ET
+BT 168.008 501.461 Td /F3 12.0 Tf  [('c<1)] TJ ET
+BT 196.808 501.461 Td /F2 12.0 Tf  [(. However, for now, we choose to model this with the )] TJ ET
+BT 457.436 501.461 Td /F3 12.0 Tf  [(HALT)] TJ ET
+BT 486.236 501.461 Td /F2 12.0 Tf  [( symbol.)] TJ ET
+BT 34.016 466.563 Td /F1 18.0 Tf  [(MTG)] TJ ET
+BT 34.016 435.941 Td /F2 12.0 Tf  [(In compliment to our work on UTM\(2,18\), we've been developing a model of the Turing machine described )] TJ ET
+BT 34.016 421.685 Td /F2 12.0 Tf  [(by )] TJ ET
+BT 49.016 421.685 Td /F4 12.0 Tf  [(Magic: The Gathering is Turing Complete)] TJ ET
+0.000 0.000 0.800 rg
+BT 252.680 421.685 Td /F2 10.7 Tf  [(1)] TJ ET
+0.000 0.000 0.800 RG
+0.53333333333333 w 0 J [  ] 0 d
+252.680 419.285 m 258.013 419.285 l S
+0.000 0.000 0.000 rg
+BT 258.013 421.685 Td /F2 12.0 Tf  [( in ACL2. While implementing this Turing machine inside all )] TJ ET
+BT 34.016 407.429 Td /F2 12.0 Tf  [(of the rules of MTG requires several game turns of setup and card-modification \(Via card-modifying cards )] TJ ET
+BT 34.016 393.173 Td /F2 12.0 Tf  [(such as )] TJ ET
+0.000 0.000 0.800 rg
+BT 72.008 393.173 Td /F2 12.0 Tf  [(Glamerdye)] TJ ET
+0.6 w 0 J [  ] 0 d
+72.008 390.473 m 125.324 390.473 l S
+0.000 0.000 0.000 rg
+BT 125.324 393.173 Td /F2 12.0 Tf  [(\), we chose to omit the details of this setup, focusing instead on the resulting structure.)] TJ ET
+BT 34.016 366.917 Td /F2 12.0 Tf  [(As MTG does not have an ordered list structure anywhere, representing order is tricky. Per )] TJ ET
+BT 472.916 366.917 Td /F4 12.0 Tf  [(Magic: The )] TJ ET
+BT 34.016 352.661 Td /F4 12.0 Tf  [(Gathering is Turing Complete)] TJ ET
+BT 179.024 352.661 Td /F2 12.0 Tf  [([)] TJ ET
+BT 183.020 357.317 Td /F2 10.7 Tf  [(2],)] TJ ET
+BT 194.572 352.661 Td /F2 12.0 Tf  [( we've implemented the )] TJ ET
+BT 311.380 352.661 Td /F4 12.0 Tf  [(Creature)] TJ ET
+BT 354.712 352.661 Td /F2 12.0 Tf  [( card type for this purpose. The )] TJ ET
+BT 508.012 352.661 Td /F4 12.0 Tf  [(name)] TJ ET
+BT 534.004 352.661 Td /F2 12.0 Tf  [( of a )] TJ ET
+BT 34.016 338.405 Td /F2 12.0 Tf  [(creature represents one of the 18 symbols in the UTM alphabet- creatures have been chosen such that their )] TJ ET
+BT 34.016 324.149 Td /F2 12.0 Tf  [(names start with different letters, for legibility. The )] TJ ET
+BT 283.316 324.149 Td /F4 12.0 Tf  [(power and toughness)] TJ ET
+BT 385.316 324.149 Td /F2 12.0 Tf  [( of a creature determine how far )] TJ ET
+BT 34.016 309.893 Td /F2 12.0 Tf  [(offset it is from the head of the Turing machine, with 2 being the position of the head. The )] TJ ET
+BT 470.960 309.893 Td /F4 12.0 Tf  [(color)] TJ ET
+BT 496.292 309.893 Td /F2 12.0 Tf  [( of a )] TJ ET
+BT 34.016 295.637 Td /F2 12.0 Tf  [(creature determines whether the symbol is offset to the left or the right of the head- the creatures )] TJ ET
+BT 34.016 281.381 Td /F2 12.0 Tf  [(representing the tape are either )] TJ ET
+BT 184.964 281.381 Td /F4 12.0 Tf  [(green)] TJ ET
+BT 212.288 281.381 Td /F2 12.0 Tf  [( or )] TJ ET
+BT 228.284 281.381 Td /F4 12.0 Tf  [(white)] TJ ET
+BT 254.288 281.381 Td /F2 12.0 Tf  [(, representing symbols to the left and right of the head )] TJ ET
+BT 34.016 267.125 Td /F2 12.0 Tf  [(respectively.)] TJ ET
+BT 34.016 240.869 Td /F2 12.0 Tf  [(Now that we have symbols, we need to model the production functions of UTM\(2,18\). We model the cards )] TJ ET
+0.000 0.000 0.800 rg
+BT 34.016 226.613 Td /F2 12.0 Tf  [(Rotlung Reanimator)] TJ ET
+0.6 w 0 J [  ] 0 d
+34.016 223.913 m 131.684 223.913 l S
+0.000 0.000 0.000 rg
+BT 131.684 226.613 Td /F2 12.0 Tf  [( and )] TJ ET
+0.000 0.000 0.800 rg
+BT 155.012 226.613 Td /F2 12.0 Tf  [(Xathrid Necromancer)] TJ ET
+0.6 w 0 J [  ] 0 d
+155.012 223.913 m 259.304 223.913 l S
+0.000 0.000 0.000 rg
+BT 259.304 226.613 Td /F2 12.0 Tf  [(, which each create a 2/2 black Zombie token, either tapped or )] TJ ET
+BT 34.016 212.357 Td /F2 12.0 Tf  [(untapped, when a certain creature dies. After using some card-modifying game abilities to tweak both the )] TJ ET
+BT 34.016 198.101 Td /F2 12.0 Tf  [(trigger creature and spawned creature, Rotlung and Xathrid become suitable representations of UTM )] TJ ET
+BT 34.016 183.845 Td /F4 12.0 Tf  [(production functions)] TJ ET
+BT 133.688 183.845 Td /F2 12.0 Tf  [(. These cards now have the property that they produce new creatures \(tape symbols\) )] TJ ET
+BT 34.016 169.589 Td /F2 12.0 Tf  [(whenever a certain creature dies \(has its )] TJ ET
+BT 228.944 169.589 Td /F4 12.0 Tf  [(toughness)] TJ ET
+BT 276.944 169.589 Td /F2 12.0 Tf  [( reduced to 0\). While a Rotlung represents a production )] TJ ET
+BT 34.016 155.333 Td /F2 12.0 Tf  [(function where the state remains the same, a Xathrid represents a production function where the state )] TJ ET
+BT 34.016 141.077 Td /F2 12.0 Tf  [(changes. Additionally, four )] TJ ET
+BT 168.332 141.077 Td /F4 12.0 Tf  [(spell)] TJ ET
+BT 191.000 141.077 Td /F2 12.0 Tf  [( cards are used, which we model as functions operating on the machine. )] TJ ET
+0.000 0.000 0.800 rg
+BT 34.016 126.821 Td /F2 12.0 Tf  [(Infest)] TJ ET
+0.6 w 0 J [  ] 0 d
+34.016 124.121 m 61.340 124.121 l S
+0.000 0.000 0.000 rg
+BT 61.340 126.821 Td /F2 12.0 Tf  [( allows for the removal of the head of the tape, as it reduces all creatures' power and toughness by 2 )] TJ ET
+BT 34.016 112.565 Td /F2 12.0 Tf  [(until the end of the in game turn, which will reduce the head's toughness to 0, killing it \(removing the current )] TJ ET
+BT 34.016 98.309 Td /F2 12.0 Tf  [(symbol there\) and triggering a Rotlung Reanimator or Xathrid Necromancer to produce a new creature \(the )] TJ ET
+BT 34.016 84.053 Td /F2 12.0 Tf  [(new head\). )] TJ ET
+0.000 0.000 0.800 rg
+BT 89.660 84.053 Td /F2 12.0 Tf  [(Cleansing Beam)] TJ ET
+0.6 w 0 J [  ] 0 d
+89.660 81.353 m 168.656 81.353 l S
+0.000 0.000 0.000 rg
+BT 168.656 84.053 Td /F2 12.0 Tf  [( combined with )] TJ ET
+0.000 0.000 0.800 rg
+BT 246.320 84.053 Td /F2 12.0 Tf  [(Vigor)] TJ ET
+0.6 w 0 J [  ] 0 d
+246.320 81.353 m 274.316 81.353 l S
+0.000 0.000 0.000 rg
+BT 274.316 84.053 Td /F2 12.0 Tf  [( gives all creatures of a certain color 2 additional power )] TJ ET
+BT 34.016 69.797 Td /F2 12.0 Tf  [(and toughness, while )] TJ ET
+0.000 0.000 0.800 rg
+BT 138.008 69.797 Td /F2 12.0 Tf  [(Soul Snuffers)] TJ ET
+0.6 w 0 J [  ] 0 d
+138.008 67.097 m 203.672 67.097 l S
+0.000 0.000 0.000 rg
+BT 203.672 69.797 Td /F2 12.0 Tf  [( removes 1 power and toughness from all creatures. This allows the tape )] TJ ET
+BT 34.016 55.541 Td /F2 12.0 Tf  [(to move left/right, as we )] TJ ET
+BT 154.004 55.541 Td /F1 12.0 Tf  [(increase)] TJ ET
+BT 195.992 55.541 Td /F2 12.0 Tf  [( the offset from the head in one direction, and )] TJ ET
+BT 418.280 55.541 Td /F1 12.0 Tf  [(decrease)] TJ ET
+BT 462.260 55.541 Td /F2 12.0 Tf  [( the offset in the )] TJ ET
+endstream
+endobj
+8 0 obj
+<< /Type /Font
+/Subtype /Type1
+/Name /F1
+/BaseFont /Times-Bold
+/Encoding /WinAnsiEncoding
+>>
+endobj
+9 0 obj
+<< /Type /Font
+/Subtype /Type1
+/Name /F2
+/BaseFont /Times-Roman
+/Encoding /WinAnsiEncoding
+>>
+endobj
+10 0 obj
+<< /Type /Font
+/Subtype /Type1
+/Name /F3
+/BaseFont /Courier
+/Encoding /WinAnsiEncoding
+>>
+endobj
+11 0 obj
+<< /Type /Font
+/Subtype /Type1
+/Name /F4
+/BaseFont /Times-Italic
+/Encoding /WinAnsiEncoding
+>>
+endobj
+12 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 13 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 252.6797 420.7255 258.0131 431.2855 ]
+>>
+endobj
+13 0 obj
+<< /Type /Action
+>>
+endobj
+14 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 15 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 72.0077 392.0935 125.3237 403.9735 ]
+>>
+endobj
+15 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://scryfall.com/card/eve/21/glamerdye)
+>>
+endobj
+16 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 17 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 34.0157 225.5335 131.6837 237.4135 ]
+>>
+endobj
+17 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://scryfall.com/card/ons/164/rotlung-reanimator)
+>>
+endobj
+18 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 19 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 155.0117 225.5335 259.3037 237.4135 ]
+>>
+endobj
+19 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://scryfall.com/card/c20/141/xathrid-necromancer)
+>>
+endobj
+20 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 21 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 89.6597 82.9735 168.6557 94.8535 ]
+>>
+endobj
+21 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://scryfall.com/card/cma/78/cleansing-beam)
+>>
+endobj
+22 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 23 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 246.3197 82.9735 274.3157 94.8535 ]
+>>
+endobj
+23 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://scryfall.com/card/bbd/215/vigor)
+>>
+endobj
+24 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 25 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 138.0077 68.7175 203.6717 80.5975 ]
+>>
+endobj
+25 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://scryfall.com/card/td2/60/soul-snuffers)
+>>
+endobj
+26 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Contents 27 0 R
+>>
+endobj
+27 0 obj
+<<
+/Length 6472 >>
+stream
+
+0.000 0.000 0.000 rg
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+BT 34.016 796.469 Td /F2 12.0 Tf  [(other. If, after Cleansing Beam, the tape does not change, the machine has halted. Otherwise, the )] TJ ET
+BT 34.016 782.213 Td /F2 12.0 Tf  [(combination of Cleansing Beam and Soul Snuffers establishes a new head, as some other creature which had )] TJ ET
+BT 34.016 767.957 Td /F2 12.0 Tf  [(3 power and toughness in either direction will now have 2 power and toughness, which we code as the head. )] TJ ET
+BT 34.016 753.701 Td /F2 12.0 Tf  [(All of these cards are modeled through functions which operate on the )] TJ ET
+BT 374.612 753.701 Td /F2 12.0 Tf  [(")] TJ ET
+BT 379.508 753.701 Td /F2 12.0 Tf  [(tape)] TJ ET
+BT 399.500 753.701 Td /F2 12.0 Tf  [(")] TJ ET
+BT 404.396 753.701 Td /F2 12.0 Tf  [(, or list of creature tokens )] TJ ET
+BT 34.016 739.445 Td /F2 12.0 Tf  [(which represent symbols on a Turing machine, so that we can produce a new tape and have a function )] TJ ET
+BT 526.568 739.445 Td /F3 12.0 Tf  [(mtgi)] TJ ET
+BT 34.016 725.189 Td /F2 12.0 Tf  [(which updates our playing board accordingly.)] TJ ET
+BT 34.016 690.291 Td /F1 18.0 Tf  [(Unimplemented MTG)] TJ ET
+BT 34.016 659.669 Td /F2 12.0 Tf  [(We made a conscious decision )] TJ ET
+BT 184.316 659.669 Td /F1 12.0 Tf  [(not)] TJ ET
+BT 200.984 659.669 Td /F2 12.0 Tf  [( to implement certain other parts of MTG \(turn-taking, phase/tap state, )] TJ ET
+BT 34.016 645.413 Td /F2 12.0 Tf  [(etc\) which the proof uses into ACL2 at the current time. Our reasoning for this is twofold: first, this allows )] TJ ET
+BT 34.016 631.157 Td /F2 12.0 Tf  [(us to build up our model, rather than starting with a more abstract model of MTG and needing to reduce it )] TJ ET
+BT 34.016 616.901 Td /F2 12.0 Tf  [(down to a UTM. This means we can be sure a given reduction works, before implementing more MTG )] TJ ET
+BT 34.016 602.645 Td /F2 12.0 Tf  [(features into our code. Second, we need to be sure that we are able to deliver a product. Implementing the )] TJ ET
+BT 34.016 588.389 Td /F2 12.0 Tf  [(full system for MTG might be outside the scope, so we want to ensure we can deliver a final product by )] TJ ET
+BT 34.016 574.133 Td /F2 12.0 Tf  [(targeting this reduced version of MTG )] TJ ET
+BT 221.984 574.133 Td /F5 12.0 Tf  [(first)] TJ ET
+BT 241.988 574.133 Td /F2 12.0 Tf  [(, and building up from there if we can successfully prove that.)] TJ ET
+BT 34.016 532.393 Td /F1 24.0 Tf  [(Current concerns, TODO)] TJ ET
+BT 34.016 499.205 Td /F2 12.0 Tf  [(Our next steps are as follows: - Reduce the MTG machine to a simpler machine, which eliminates ordering )] TJ ET
+BT 34.016 484.949 Td /F2 12.0 Tf  [(by toughness/color and orders based on that - Prove theorems A and B for the two machines - If time )] TJ ET
+BT 34.016 470.693 Td /F2 12.0 Tf  [(permits, implement tapped creatures and phasing into the MTG model - reduce this model to our initial )] TJ ET
+BT 34.016 456.437 Td /F2 12.0 Tf  [(MTG model)] TJ ET
+BT 34.016 430.181 Td /F2 12.0 Tf  [(These first two steps are pivotal to completing our project, and we have begun work on the first one, but )] TJ ET
+BT 34.016 415.925 Td /F2 12.0 Tf  [(don't have any code which is truly deliverable at this time, as we're still working out the logistics of this )] TJ ET
+BT 34.016 401.669 Td /F2 12.0 Tf  [(proof. This step only requires mapping the unordered list of creatures to an ordered list of creatures, with all )] TJ ET
+BT 34.016 387.413 Td /F2 12.0 Tf  [(information about their position removed. We first write a function which processes a list and orderes the )] TJ ET
+BT 34.016 373.157 Td /F2 12.0 Tf  [(creatures accordingly. We then develop a proof that the output of a machine which processes these creatures )] TJ ET
+BT 34.016 358.901 Td /F2 12.0 Tf  [(is equivalent to mapping the first pass of )] TJ ET
+BT 232.004 358.901 Td /F3 12.0 Tf  [(mtgi)] TJ ET
+BT 260.804 358.901 Td /F2 12.0 Tf  [( to output on the same tape/program. The second proof we )] TJ ET
+BT 34.016 344.645 Td /F2 12.0 Tf  [(believe is easier than the existing Moore proof, as that proof needed to find an existing natural that caused )] TJ ET
+BT 34.016 330.389 Td /F2 12.0 Tf  [(both programs to terminate with the same tapes, as the M1 machine ran much slower than the Rogers TM, )] TJ ET
+BT 34.016 316.133 Td /F2 12.0 Tf  [(while the UTM/MTG machine are 1-to-1 in terms of steps: the UTM is directly embedded in MTG. )] TJ ET
+BT 34.016 301.877 Td /F2 12.0 Tf  [(Therefore, we do not need to develop the clock lemmas, or find-j/find-k functions which Moore does. We )] TJ ET
+BT 34.016 287.621 Td /F2 12.0 Tf  [(only need to prove theorems A and B, which require some intermediate lemmas, in particular that the MTG )] TJ ET
+BT 34.016 273.365 Td /F2 12.0 Tf  [(machine stays halted when further instructions are run.)] TJ ET
+BT 34.016 247.109 Td /F2 12.0 Tf  [(The next two steps we began work on, but decided to set aside to focus on getting results from the proof )] TJ ET
+BT 34.016 232.853 Td /F2 12.0 Tf  [(first. These steps would require modelling the tapped state for creatures, as well as )] TJ ET
+BT 433.268 232.853 Td /F4 12.0 Tf  [(phasing)] TJ ET
+BT 471.272 232.853 Td /F2 12.0 Tf  [( for the )] TJ ET
+BT 34.016 218.597 Td /F2 12.0 Tf  [(production functions, which is how MTG handles state changes \(only one set of production functions is )] TJ ET
+BT 34.016 204.341 Td /F2 12.0 Tf  [(active at one time\). This would require adding a boolean to the representation of creatures and production )] TJ ET
+BT 34.016 190.085 Td /F2 12.0 Tf  [(functions, and slowing down the speed at which the MTG TM operates to accurately reflect turns in MTG. )] TJ ET
+BT 34.016 175.829 Td /F2 12.0 Tf  [(This would require developing the clocks similar to what Moore did, although this too would be simpler-- )] TJ ET
+BT 34.016 161.573 Td /F2 12.0 Tf  [(we know that any instruction with a state change takes 3 turns, while any instruction without takes 4 turns. )] TJ ET
+BT 34.016 147.317 Td /F2 12.0 Tf  [(We will attempt to implement this following the success of the initial proof. If we aren't able to implement )] TJ ET
+BT 34.016 133.061 Td /F2 12.0 Tf  [(this step, we still have a working proof of a reduced representation for Magic: The Gathering.)] TJ ET
+BT 34.016 91.321 Td /F1 24.0 Tf  [(Overall status)] TJ ET
+BT 34.016 58.133 Td /F2 12.0 Tf  [(We are in a good position to finish this theorem and present it. We've worked on the data definitions, and a )] TJ ET
+endstream
+endobj
+28 0 obj
+<< /Type /Font
+/Subtype /Type1
+/Name /F5
+/BaseFont /Times-BoldItalic
+/Encoding /WinAnsiEncoding
+>>
+endobj
+29 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Annots [ 31 0 R 33 0 R 35 0 R 37 0 R 39 0 R 41 0 R ]
+/Contents 30 0 R
+>>
+endobj
+30 0 obj
+<<
+/Length 5373 >>
+stream
+
+0.000 0.000 0.000 rg
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+BT 34.016 796.469 Td /F2 12.0 Tf  [(lot of time has gone into understanding and synthesizing the results from 3 papers: )] TJ ET
+0.000 0.000 0.800 rg
+BT 433.316 796.469 Td /F4 12.0 Tf  [(Magic: The Gathering is )] TJ ET
+0.6 w 0 J [  ] 0 d
+433.316 793.769 m 555.308 793.769 l S
+BT 34.016 782.213 Td /F4 12.0 Tf  [(Turing Complete)] TJ ET
+0.6 w 0 J [  ] 0 d
+34.016 779.513 m 115.688 779.513 l S
+0.000 0.000 0.000 rg
+BT 115.688 782.213 Td /F2 12.0 Tf  [(,)] TJ ET
+0.000 0.000 0.800 rg
+BT 118.688 782.213 Td /F2 12.0 Tf  [(Rogozhin's 1996 proof)] TJ ET
+0.6 w 0 J [  ] 0 d
+118.688 779.513 m 228.176 779.513 l S
+0.000 0.000 0.000 rg
+BT 228.176 782.213 Td /F2 12.0 Tf  [( that the UTM\(2, 18\) is Turing complete, and )] TJ ET
+0.000 0.000 0.800 rg
+BT 448.484 782.213 Td /F2 12.0 Tf  [(Moore's proof)] TJ ET
+0.6 w 0 J [  ] 0 d
+448.484 779.513 m 516.296 779.513 l S
+0.000 0.000 0.000 rg
+BT 516.296 782.213 Td /F2 12.0 Tf  [(of the )] TJ ET
+BT 34.016 767.957 Td /F2 12.0 Tf  [(Turing equivalence of the M1 system. As such, we feel prepared to write this theorem, and constructed our )] TJ ET
+BT 34.016 753.701 Td /F2 12.0 Tf  [(data with this end goal in mind.)] TJ ET
+BT 34.016 711.961 Td /F1 24.0 Tf  [(Code)] TJ ET
+BT 34.016 678.773 Td /F2 12.0 Tf  [(The code for this project is also available at )] TJ ET
+0.000 0.000 0.800 rg
+BT 246.308 678.773 Td /F2 12.0 Tf  [(https://github.com/soulwa/mtg-tm)] TJ ET
+0.6 w 0 J [  ] 0 d
+246.308 676.073 m 410.000 676.073 l S
+0.000 0.000 0.000 rg
+BT 410.000 678.773 Td /F2 12.0 Tf  [(.)] TJ ET
+BT 34.016 650.579 Td /F1 14.0 Tf  [(utm.lisp)] TJ ET
+BT 34.016 625.283 Td /F3 12.0 Tf  [(;; an implementation of a tag system)] TJ ET
+BT 34.016 612.832 Td /F3 12.0 Tf  [(;; some possible tags)] TJ ET
+BT 34.016 600.382 Td /F3 12.0 Tf  [(\(defconst *alphabet*)] TJ ET
+BT 34.016 587.932 Td /F3 12.0 Tf  [(  '\(a b c d e f g h i j k l m n o p q r\)\))] TJ ET
+BT 34.016 575.482 Td /F3 12.0 Tf  [(;; an example of a tag system program)] TJ ET
+BT 34.016 563.031 Td /F3 12.0 Tf  [(\(defconst *even-huh-tag-sys*)] TJ ET
+BT 34.016 550.581 Td /F3 12.0 Tf  [(  '\(2 \(\(a \(\)\) \(b \(b\)\) \(c \(b c\)\)\) \(c c a a a a\)\)\))] TJ ET
+BT 34.016 538.131 Td /F3 12.0 Tf  [(;; determines if valid tag)] TJ ET
+BT 34.016 525.681 Td /F3 12.0 Tf  [(;; if an invalid tag has been produced, it's likely)] TJ ET
+BT 34.016 513.230 Td /F3 12.0 Tf  [(;; HALT)] TJ ET
+BT 34.016 500.780 Td /F3 12.0 Tf  [(\(defun tag-symp \(x\))] TJ ET
+BT 34.016 488.330 Td /F3 12.0 Tf  [(  \(member x *alphabet*\)\))] TJ ET
+BT 34.016 475.880 Td /F3 12.0 Tf  [(;; listof symbol)] TJ ET
+BT 34.016 463.429 Td /F3 12.0 Tf  [(;; used for production functions)] TJ ET
+BT 34.016 450.979 Td /F3 12.0 Tf  [(\(defun tag-losp \(x\))] TJ ET
+BT 34.016 438.529 Td /F3 12.0 Tf  [(  \(cond \(\(endp x\) T\))] TJ ET
+BT 34.016 426.079 Td /F3 12.0 Tf  [(        \(\(consp x\) \(and \(tag-symp \(car x\)\))] TJ ET
+BT 34.016 413.628 Td /F3 12.0 Tf  [(                        \(tag-losp \(cdr x\)\)\)\)\)\))] TJ ET
+BT 34.016 401.178 Td /F3 12.0 Tf  [(;; remove n elements of a list from the list)] TJ ET
+BT 34.016 388.728 Td /F3 12.0 Tf  [(\(defun remove-n \(n x\))] TJ ET
+BT 34.016 376.278 Td /F3 12.0 Tf  [(  \(if \(zp n\))] TJ ET
+BT 34.016 363.827 Td /F3 12.0 Tf  [(      x)] TJ ET
+BT 34.016 351.377 Td /F3 12.0 Tf  [(      \(remove-n \(- n 1\) \(cdr x\)\)\)\))] TJ ET
+BT 34.016 338.927 Td /F3 12.0 Tf  [(;; because tag systems "eat" tapes left to right)] TJ ET
+BT 34.016 326.477 Td /F3 12.0 Tf  [(;; no need for a half-tape)] TJ ET
+BT 34.016 314.027 Td /F3 12.0 Tf  [(;; a list of symbols)] TJ ET
+BT 34.016 301.576 Td /F3 12.0 Tf  [(\(defun tag-tapep \(x\))] TJ ET
+BT 34.016 289.126 Td /F3 12.0 Tf  [(  \(cond \(\(endp x\) T\))] TJ ET
+BT 34.016 276.676 Td /F3 12.0 Tf  [(        \(\(consp x\) \(and \(tag-symp \(car x\)\))] TJ ET
+BT 34.016 264.226 Td /F3 12.0 Tf  [(                        \(tag-tapep \(cdr x\)\)\)\)\)\))] TJ ET
+BT 34.016 251.775 Td /F3 12.0 Tf  [(;; production function)] TJ ET
+BT 34.016 239.325 Td /F3 12.0 Tf  [(;; a cons of a symp to a los-symp)] TJ ET
+BT 34.016 226.875 Td /F3 12.0 Tf  [(\(defun tag-funcp \(x\))] TJ ET
+BT 34.016 214.425 Td /F3 12.0 Tf  [(  \(and \(consp x\))] TJ ET
+BT 34.016 201.974 Td /F3 12.0 Tf  [(       \(= \(length x\) 2\))] TJ ET
+BT 34.016 189.524 Td /F3 12.0 Tf  [(       \(tag-symp \(car x\)\))] TJ ET
+BT 34.016 177.074 Td /F3 12.0 Tf  [(       \(tag-losp \(car \(cdr x\)\)\)\)\))] TJ ET
+BT 34.016 164.624 Td /F3 12.0 Tf  [(;; a list or "set" of prod-funcs)] TJ ET
+BT 34.016 152.173 Td /F3 12.0 Tf  [(\(defun tag-funcsp \(x\))] TJ ET
+BT 34.016 139.723 Td /F3 12.0 Tf  [(  \(cond \(\(endp x\) T\))] TJ ET
+BT 34.016 127.273 Td /F3 12.0 Tf  [(        \(\(consp x\) \(and \(tag-funcp \(car x\)\))] TJ ET
+BT 34.016 114.823 Td /F3 12.0 Tf  [(                        \(tag-funcsp \(cdr x\)\)\)\)\)\))] TJ ET
+BT 34.016 102.372 Td /F3 12.0 Tf  [(;; does this tag-func x apply to sym y)] TJ ET
+BT 34.016 89.922 Td /F3 12.0 Tf  [(\(defun tag-func-appliesp \(x y\))] TJ ET
+BT 34.016 77.472 Td /F3 12.0 Tf  [(  \(and \(tag-funcp x\))] TJ ET
+BT 34.016 65.022 Td /F3 12.0 Tf  [(       \(tag-symp y\))] TJ ET
+BT 34.016 52.571 Td /F3 12.0 Tf  [(       \(equal \(car x\) y\)\)\))] TJ ET
+BT 34.016 40.121 Td /F3 12.0 Tf  [(;; apply func)] TJ ET
+BT 34.016 27.671 Td /F3 12.0 Tf  [(\(defun tag-func-apply \(x\))] TJ ET
+endstream
+endobj
+31 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 32 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 433.3157 807.8743 433.3157 807.8743 ]
+>>
+endobj
+32 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://arxiv.org/pdf/1904.09828.pdf)
+>>
+endobj
+33 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 34 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 433.3157 795.3895 555.3077 807.2695 ]
+>>
+endobj
+34 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://arxiv.org/pdf/1904.09828.pdf)
+>>
+endobj
+35 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 36 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 34.0157 781.1335 115.6877 793.0135 ]
+>>
+endobj
+36 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://arxiv.org/pdf/1904.09828.pdf)
+>>
+endobj
+37 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 38 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 118.6877 781.1335 228.1757 793.0135 ]
+>>
+endobj
+38 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://czyborra.com/thti/rogozhin1996.pdf)
+>>
+endobj
+39 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 40 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 448.4837 781.1335 516.2957 793.0135 ]
+>>
+endobj
+40 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://www.cs.utexas.edu/~moore/publications/turing-completeness.pdf)
+>>
+endobj
+41 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 42 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 246.3077 677.6935 409.9997 689.5735 ]
+>>
+endobj
+42 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://github.com/soulwa/mtg-tm)
+>>
+endobj
+43 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Contents 44 0 R
+>>
+endobj
+44 0 obj
+<<
+/Length 4974 >>
+stream
+
+0.000 0.000 0.000 rg
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+BT 34.016 797.914 Td /F3 12.0 Tf  [(  \(car \(cdr x\)\)\))] TJ ET
+BT 34.016 785.464 Td /F3 12.0 Tf  [(;; return the applicable func from a set)] TJ ET
+BT 34.016 773.014 Td /F3 12.0 Tf  [(;; assumes such a func exists)] TJ ET
+BT 34.016 760.563 Td /F3 12.0 Tf  [(\(defun tag-funcs-applicable \(x y\))] TJ ET
+BT 34.016 748.113 Td /F3 12.0 Tf  [(  \(cond \(\(endp x\) nil\))] TJ ET
+BT 34.016 735.663 Td /F3 12.0 Tf  [(        \(\(consp x\) \(if \(tag-func-appliesp \(car x\) y\))] TJ ET
+BT 34.016 723.213 Td /F3 12.0 Tf  [(                       \(car x\))] TJ ET
+BT 34.016 710.762 Td /F3 12.0 Tf  [(                       \(tag-funcs-applicable \(cdr x\) y\)\)\)\)\))] TJ ET
+BT 34.016 698.312 Td /F3 12.0 Tf  [(;; a tag system has a tape,)] TJ ET
+BT 34.016 685.862 Td /F3 12.0 Tf  [(;; deletion number, and prod. function)] TJ ET
+BT 34.016 673.412 Td /F3 12.0 Tf  [(;; Alphabet is included in the defintion of tape)] TJ ET
+BT 34.016 660.961 Td /F3 12.0 Tf  [(;; '\(,deletion-number ,prod-funcs ,tape\))] TJ ET
+BT 34.016 648.511 Td /F3 12.0 Tf  [(\(defun tag-sysp \(x\))] TJ ET
+BT 34.016 636.061 Td /F3 12.0 Tf  [(  \(and \(consp x\))] TJ ET
+BT 34.016 623.611 Td /F3 12.0 Tf  [(       \(equal \(length x\) 3\))] TJ ET
+BT 34.016 611.160 Td /F3 12.0 Tf  [(       \(natp \(first x\)\))] TJ ET
+BT 34.016 598.710 Td /F3 12.0 Tf  [(       \(tag-funcsp \(second x\)\))] TJ ET
+BT 34.016 586.260 Td /F3 12.0 Tf  [(       \(tag-tapep \(third x\)\)\)\))] TJ ET
+BT 34.016 573.810 Td /F3 12.0 Tf  [(;; step the tape)] TJ ET
+BT 34.016 561.359 Td /F3 12.0 Tf  [(;; find the applicable func in the tag system)] TJ ET
+BT 34.016 548.909 Td /F3 12.0 Tf  [(;; using the first element of the tape and the set of production functions)] TJ ET
+BT 34.016 536.459 Td /F3 12.0 Tf  [(;; append the application of that function to the end)] TJ ET
+BT 34.016 524.009 Td /F3 12.0 Tf  [(;; delete the deletion number from the head)] TJ ET
+BT 34.016 511.559 Td /F3 12.0 Tf  [(\(defun tag-step \(m funcs tape\))] TJ ET
+BT 34.016 499.108 Td /F3 12.0 Tf  [(  \(remove-n m \(append tape)] TJ ET
+BT 34.016 486.658 Td /F3 12.0 Tf  [(                      \(tag-func-apply)] TJ ET
+BT 34.016 474.208 Td /F3 12.0 Tf  [(                      \(tag-funcs-applicable funcs \(car tape\)\)\)\)\)\))] TJ ET
+BT 34.016 461.758 Td /F3 12.0 Tf  [(\(defun tag-exec \(m funcs tape n\))] TJ ET
+BT 34.016 449.307 Td /F3 12.0 Tf  [(  \(declare \(xargs :measure \(nfix n\)\)\))] TJ ET
+BT 34.016 436.857 Td /F3 12.0 Tf  [(  \(cond)] TJ ET
+BT 34.016 424.407 Td /F3 12.0 Tf  [(   ;; both of these are termination conditions)] TJ ET
+BT 34.016 411.957 Td /F3 12.0 Tf  [(   \(\(< \(length tape\) m\) tape\))] TJ ET
+BT 34.016 399.506 Td /F3 12.0 Tf  [(   \(\(zp n\) `\(nil ,tape\)\))] TJ ET
+BT 34.016 387.056 Td /F3 12.0 Tf  [(   \(t \(utm-exec m funcs \(tag-step m funcs tape\) \(- n 1\)\)\)\)\))] TJ ET
+BT 34.016 374.606 Td /F3 12.0 Tf  [(;; wrapper for utm-exec, which works on a tag system construct)] TJ ET
+BT 34.016 362.156 Td /F3 12.0 Tf  [(\(defun tag-sys-exec \(tag-sys n\))] TJ ET
+BT 34.016 349.705 Td /F3 12.0 Tf  [(  \(tag-exec \(first tag-sys\))] TJ ET
+BT 34.016 337.255 Td /F3 12.0 Tf  [(            \(second tag-sys\))] TJ ET
+BT 34.016 324.805 Td /F3 12.0 Tf  [(            \(third tag-sys\))] TJ ET
+BT 34.016 312.355 Td /F3 12.0 Tf  [(            n\)\))] TJ ET
+BT 34.016 299.904 Td /F3 12.0 Tf  [(;; implementation of Rogozhin's UTM\(2, 18\))] TJ ET
+BT 34.016 287.454 Td /F3 12.0 Tf  [(\(defconst *rogozhin-alphabet*)] TJ ET
+BT 34.016 275.004 Td /F3 12.0 Tf  [(  '\(1 1> 1< 1>1 1<1 b b> b< b>1 b<1 b2 b3 c c> c< c>1 c<1 c2\)\))] TJ ET
+BT 34.016 262.554 Td /F3 12.0 Tf  [(\(defconst *rogozhin-states*)] TJ ET
+BT 34.016 250.103 Td /F3 12.0 Tf  [(  '\(q1 q2\)\))] TJ ET
+BT 34.016 237.653 Td /F3 12.0 Tf  [(\(defconst *utm-2-18-prog*)] TJ ET
+BT 34.016 225.203 Td /F3 12.0 Tf  [(  '\(\(q1 1 c2 L q1\))] TJ ET
+BT 34.016 212.753 Td /F3 12.0 Tf  [(    \(q1 1> 1<1 R q1\))] TJ ET
+BT 34.016 200.303 Td /F3 12.0 Tf  [(    \(q1 1< c2 L q1\))] TJ ET
+BT 34.016 187.852 Td /F3 12.0 Tf  [(    \(q1 1>1 1 R q1\))] TJ ET
+BT 34.016 175.402 Td /F3 12.0 Tf  [(    \(q1 1<1 1>1 L q1\))] TJ ET
+BT 34.016 162.952 Td /F3 12.0 Tf  [(    \(q1 b b< R q1\))] TJ ET
+BT 34.016 150.502 Td /F3 12.0 Tf  [(    \(q1 b> b<1 R q1\))] TJ ET
+BT 34.016 138.051 Td /F3 12.0 Tf  [(    \(q1 b< b L q1\))] TJ ET
+BT 34.016 125.601 Td /F3 12.0 Tf  [(    \(q1 b>1 b R q1\))] TJ ET
+BT 34.016 113.151 Td /F3 12.0 Tf  [(    \(q1 b<1 b>1 L q1\))] TJ ET
+BT 34.016 100.701 Td /F3 12.0 Tf  [(    \(q1 b2 b3 L q2\))] TJ ET
+BT 34.016 88.250 Td /F3 12.0 Tf  [(    \(q1 b3 b>1 L q2\))] TJ ET
+BT 34.016 75.800 Td /F3 12.0 Tf  [(    \(q1 c 1> L q2\))] TJ ET
+BT 34.016 63.350 Td /F3 12.0 Tf  [(    \(q1 c> c< R q1\))] TJ ET
+BT 34.016 50.900 Td /F3 12.0 Tf  [(    \(q1 c< c>1 L q1\))] TJ ET
+BT 34.016 38.449 Td /F3 12.0 Tf  [(    \(q1 c>1 c<1 L q1\))] TJ ET
+BT 34.016 25.999 Td /F3 12.0 Tf  [(    \(q1 c<1 HALT nil nil\))] TJ ET
+endstream
+endobj
+45 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Contents 46 0 R
+>>
+endobj
+46 0 obj
+<<
+/Length 4871 >>
+stream
+
+0.000 0.000 0.000 rg
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+BT 34.016 797.914 Td /F3 12.0 Tf  [(    \(q1 c2 1< R q1\))] TJ ET
+BT 34.016 785.464 Td /F3 12.0 Tf  [(    \(q2 1 1< R q2\))] TJ ET
+BT 34.016 773.014 Td /F3 12.0 Tf  [(    \(q2 1> 1< R q2\))] TJ ET
+BT 34.016 760.563 Td /F3 12.0 Tf  [(    \(q2 1< 1> L q2\))] TJ ET
+BT 34.016 748.113 Td /F3 12.0 Tf  [(    \(q2 1>1 1<1 R q2\))] TJ ET
+BT 34.016 735.663 Td /F3 12.0 Tf  [(    \(q2 1<1 1 L q2\))] TJ ET
+BT 34.016 723.213 Td /F3 12.0 Tf  [(    \(q2 b b2 R q1\))] TJ ET
+BT 34.016 710.762 Td /F3 12.0 Tf  [(    \(q2 b> b< R q2\))] TJ ET
+BT 34.016 698.312 Td /F3 12.0 Tf  [(    \(q2 b< b> L q2\))] TJ ET
+BT 34.016 685.862 Td /F3 12.0 Tf  [(    \(q2 b>1 b<1 R q2\))] TJ ET
+BT 34.016 673.412 Td /F3 12.0 Tf  [(    \(q2 b<1 b> L q2\))] TJ ET
+BT 34.016 660.961 Td /F3 12.0 Tf  [(    \(q2 b2 b R q1\))] TJ ET
+BT 34.016 648.511 Td /F3 12.0 Tf  [(    \(q2 b3 b<1 R q2\))] TJ ET
+BT 34.016 636.061 Td /F3 12.0 Tf  [(    \(q2 c c< R q2\))] TJ ET
+BT 34.016 623.611 Td /F3 12.0 Tf  [(    \(q2 c> c< R q2\))] TJ ET
+BT 34.016 611.160 Td /F3 12.0 Tf  [(    \(q2 c< c> L q2\))] TJ ET
+BT 34.016 598.710 Td /F3 12.0 Tf  [(    \(q2 c>1 c2 R q2\))] TJ ET
+BT 34.016 586.260 Td /F3 12.0 Tf  [(    \(q2 c<1 c2 L q1\))] TJ ET
+BT 34.016 573.810 Td /F3 12.0 Tf  [(    \(q2 c2 c L q2\)\)\))] TJ ET
+BT 34.016 561.359 Td /F3 12.0 Tf  [(;; represents a symbol that's part of a UTM\(2, 18\))] TJ ET
+BT 34.016 548.909 Td /F3 12.0 Tf  [(\(defun utm-symbolp \(x\))] TJ ET
+BT 34.016 536.459 Td /F3 12.0 Tf  [(  \(member x *rogozhin-alphabet*\)\))] TJ ET
+BT 34.016 524.009 Td /F3 12.0 Tf  [(;; represents a direction to move the tape)] TJ ET
+BT 34.016 511.559 Td /F3 12.0 Tf  [(\(defun utm-dirp \(x\))] TJ ET
+BT 34.016 499.108 Td /F3 12.0 Tf  [(  \(or \(equal x 'L\) \(equal x 'R\) \(equal x nil\)\)\))] TJ ET
+BT 34.016 486.658 Td /F3 12.0 Tf  [(;; represents a state in the UTM\(2, 18\))] TJ ET
+BT 34.016 474.208 Td /F3 12.0 Tf  [(\(defun utm-statep \(x\))] TJ ET
+BT 34.016 461.758 Td /F3 12.0 Tf  [(  \(or \(member x *rogozhin-states*\) \(equal x nil\)\)\))] TJ ET
+BT 34.016 449.307 Td /F3 12.0 Tf  [(;; represents an instruction)] TJ ET
+BT 34.016 436.857 Td /F3 12.0 Tf  [(\(defun utm-instrp \(x\))] TJ ET
+BT 34.016 424.407 Td /F3 12.0 Tf  [(  \(and)] TJ ET
+BT 34.016 411.957 Td /F3 12.0 Tf  [(    \(true-listp x\))] TJ ET
+BT 34.016 399.506 Td /F3 12.0 Tf  [(    \(= \(length x\) 4\))] TJ ET
+BT 34.016 387.056 Td /F3 12.0 Tf  [(    \(utm-symbolp \(first x\)\))] TJ ET
+BT 34.016 374.606 Td /F3 12.0 Tf  [(    \(or \(utm-symbolp \(second x\)\) \(equal x 'HALT\)\))] TJ ET
+BT 34.016 362.156 Td /F3 12.0 Tf  [(    \(utm-dirp \(third x\)\))] TJ ET
+BT 34.016 349.705 Td /F3 12.0 Tf  [(    \(utm-statep \(fourth x\)\)\)\))] TJ ET
+BT 34.016 337.255 Td /F3 12.0 Tf  [(;; represents a list of instructions, or: a machine)] TJ ET
+BT 34.016 324.805 Td /F3 12.0 Tf  [(;; might not be turing complete \(no guarantees are made)] TJ ET
+BT 34.016 312.355 Td /F3 12.0 Tf  [(;; by this function\), but a program which runs on a tape)] TJ ET
+BT 34.016 299.904 Td /F3 12.0 Tf  [(;; we know our *utm-2-18* is complete thanks to Rogozhin's proof)] TJ ET
+BT 34.016 287.454 Td /F3 12.0 Tf  [(\(defun utm-loinstrp \(x\))] TJ ET
+BT 34.016 275.004 Td /F3 12.0 Tf  [(  \(cond)] TJ ET
+BT 34.016 262.554 Td /F3 12.0 Tf  [(    \(\(endp x\) t\))] TJ ET
+BT 34.016 250.103 Td /F3 12.0 Tf  [(    \(\(consp x\) \(and \(utm-instrp \(first x\)\))] TJ ET
+BT 34.016 237.653 Td /F3 12.0 Tf  [(                    \(utm-loinstrp \(rest x\)\)\)\)\)\))] TJ ET
+BT 34.016 225.203 Td /F3 12.0 Tf  [(;; gets the head of the tape, or a new blank symbol)] TJ ET
+BT 34.016 212.753 Td /F3 12.0 Tf  [(\(defun sym \(x\))] TJ ET
+BT 34.016 200.303 Td /F3 12.0 Tf  [(  \(if \(consp x\) \(first x\) '1<\)\))] TJ ET
+BT 34.016 187.852 Td /F3 12.0 Tf  [(;; get the next instruction for a utm, given a symbol, state, and a program)] TJ ET
+BT 34.016 175.402 Td /F3 12.0 Tf  [(\(defun instr \(sym st progm\))] TJ ET
+BT 34.016 162.952 Td /F3 12.0 Tf  [(  \(cond)] TJ ET
+BT 34.016 150.502 Td /F3 12.0 Tf  [(    \(\(endp progm\) nil\) ;; error)] TJ ET
+BT 34.016 138.051 Td /F3 12.0 Tf  [(    \(\(and)] TJ ET
+BT 34.016 125.601 Td /F3 12.0 Tf  [(      \(equal st \(first \(first progm\)\)\))] TJ ET
+BT 34.016 113.151 Td /F3 12.0 Tf  [(      \(equal sym \(second \(first progm\)\)\)\))] TJ ET
+BT 34.016 100.701 Td /F3 12.0 Tf  [(     \(sym \(first progm\)\)\))] TJ ET
+BT 34.016 88.250 Td /F3 12.0 Tf  [(    \(t \(instr sym st \(rest progm\)\)\)\)\))] TJ ET
+BT 34.016 75.800 Td /F3 12.0 Tf  [(;; definition of tape based on tmi-reductions.lisp)] TJ ET
+BT 34.016 63.350 Td /F3 12.0 Tf  [(;; represents half of a turing machine's tape)] TJ ET
+BT 34.016 50.900 Td /F3 12.0 Tf  [(\(defun half-tapep \(x\))] TJ ET
+BT 34.016 38.449 Td /F3 12.0 Tf  [(  \(cond)] TJ ET
+BT 34.016 25.999 Td /F3 12.0 Tf  [(    \(\(endp x\) t\))] TJ ET
+endstream
+endobj
+47 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Contents 48 0 R
+>>
+endobj
+48 0 obj
+<<
+/Length 4855 >>
+stream
+
+0.000 0.000 0.000 rg
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+BT 34.016 797.914 Td /F3 12.0 Tf  [(    \(\(consp x\) \(and \(utm-symbolp \(first x\)\))] TJ ET
+BT 34.016 785.464 Td /F3 12.0 Tf  [(                    \(half-tapep \(rest x\)\)\)\)\)\))] TJ ET
+BT 34.016 773.014 Td /F3 12.0 Tf  [(;; represents a full tape:)] TJ ET
+BT 34.016 760.563 Td /F3 12.0 Tf  [(;; '\(,first-half ,second-half\))] TJ ET
+BT 34.016 748.113 Td /F3 12.0 Tf  [(;; where first-half is reversed from its current order, and)] TJ ET
+BT 34.016 735.663 Td /F3 12.0 Tf  [(;; \(first second-half\) is the head of the tape)] TJ ET
+BT 34.016 723.213 Td /F3 12.0 Tf  [(\(defun tapep \(x\))] TJ ET
+BT 34.016 710.762 Td /F3 12.0 Tf  [(  \(and \(consp x\))] TJ ET
+BT 34.016 698.312 Td /F3 12.0 Tf  [(    \(half-tapep \(first x\)\))] TJ ET
+BT 34.016 685.862 Td /F3 12.0 Tf  [(    \(half-tapep \(rest x\)\)\)\))] TJ ET
+BT 34.016 673.412 Td /F3 12.0 Tf  [(;; rev1 based on tmi-reductions.lisp)] TJ ET
+BT 34.016 660.961 Td /F3 12.0 Tf  [(;; this function adds each element of x to a in reverse order)] TJ ET
+BT 34.016 648.511 Td /F3 12.0 Tf  [(;; so it returns)] TJ ET
+BT 34.016 636.061 Td /F3 12.0 Tf  [(;; \(append \(reverse x\) a\))] TJ ET
+BT 34.016 623.611 Td /F3 12.0 Tf  [(\(defun rev1 \(x a\))] TJ ET
+BT 34.016 611.160 Td /F3 12.0 Tf  [(  \(cond)] TJ ET
+BT 34.016 598.710 Td /F3 12.0 Tf  [(    \(\(endp x\) a\))] TJ ET
+BT 34.016 586.260 Td /F3 12.0 Tf  [(    \(\(consp x\) \(rev1 \(rest x\) \(cons \(first x\) a\)\)\)\)\))] TJ ET
+BT 34.016 573.810 Td /F3 12.0 Tf  [(;; shows the tape \(from tmi-reductions.lisp\))] TJ ET
+BT 34.016 561.359 Td /F3 12.0 Tf  [(;; for debugging purposes)] TJ ET
+BT 34.016 548.909 Td /F3 12.0 Tf  [(\(defun show-tape \(tape\))] TJ ET
+BT 34.016 536.459 Td /F3 12.0 Tf  [(  \(cond \(\(consp tape\))] TJ ET
+BT 34.016 524.009 Td /F3 12.0 Tf  [(         \(rev1 \(car tape\))] TJ ET
+BT 34.016 511.559 Td /F3 12.0 Tf  [(                  \(cons '[ \(cons \(sym \(cdr tape\)\) \(cons '] \(cdr \(cdr tape\)\)\)\)\)\)\))] TJ ET
+BT 34.016 499.108 Td /F3 12.0 Tf  [(        \(t nil\)\)\))] TJ ET
+BT 34.016 486.658 Td /F3 12.0 Tf  [(;; gets the head of the tape)] TJ ET
+BT 34.016 474.208 Td /F3 12.0 Tf  [(\(defun tape-head \(tape\))] TJ ET
+BT 34.016 461.758 Td /F3 12.0 Tf  [(  \(sym \(rest tape\)\)\))] TJ ET
+BT 34.016 449.307 Td /F3 12.0 Tf  [(;; generates a new tape given a new mark to write)] TJ ET
+BT 34.016 436.857 Td /F3 12.0 Tf  [(;; and a direction to move in)] TJ ET
+BT 34.016 424.407 Td /F3 12.0 Tf  [(\(defun new-tape \(mark dir tape\))] TJ ET
+BT 34.016 411.957 Td /F3 12.0 Tf  [(  ;; shadow tape with the new tape, since we always replace the mark)] TJ ET
+BT 34.016 399.506 Td /F3 12.0 Tf  [(  \(let \(\(tape \(cons \(first tape\) \(cons mark \(rest \(rest tape\)\)\)\)\)\))] TJ ET
+BT 34.016 387.056 Td /F3 12.0 Tf  [(    \(case dir)] TJ ET
+BT 34.016 374.606 Td /F3 12.0 Tf  [(      ;; push head to the beginning of \(first tape\), which)] TJ ET
+BT 34.016 362.156 Td /F3 12.0 Tf  [(      ;; represents the order of the symbols backwards)] TJ ET
+BT 34.016 349.705 Td /F3 12.0 Tf  [(      \(L \(cons \(rest \(first tape\)\))] TJ ET
+BT 34.016 337.255 Td /F3 12.0 Tf  [(               \(cons \(sym \(first tape\)\))] TJ ET
+BT 34.016 324.805 Td /F3 12.0 Tf  [(                     \(rest tape\)\)\)\))] TJ ET
+BT 34.016 312.355 Td /F3 12.0 Tf  [(      ;; add new symbol to second half of tape)] TJ ET
+BT 34.016 299.904 Td /F3 12.0 Tf  [(      \(R \(cons \(cons \(sym \(rest tape\)\))] TJ ET
+BT 34.016 287.454 Td /F3 12.0 Tf  [(                     \(first tape\)\))] TJ ET
+BT 34.016 275.004 Td /F3 12.0 Tf  [(               \(rest \(rest tape\)\)\)\)\)\)\))] TJ ET
+BT 34.016 262.554 Td /F3 12.0 Tf  [(;; runs a UTM on a given tape)] TJ ET
+BT 34.016 250.103 Td /F3 12.0 Tf  [(\(defun utmi \(st tape tm n\))] TJ ET
+BT 34.016 237.653 Td /F3 12.0 Tf  [(  \(declare \(xargs :measure \(nfix n\)\)\))] TJ ET
+BT 34.016 225.203 Td /F3 12.0 Tf  [(  \(cond)] TJ ET
+BT 34.016 212.753 Td /F3 12.0 Tf  [(    ;; we're done taking steps)] TJ ET
+BT 34.016 200.303 Td /F3 12.0 Tf  [(    \(\(zp n\) nil\))] TJ ET
+BT 34.016 187.852 Td /F3 12.0 Tf  [(    ;; the symbol appears in the progm)] TJ ET
+BT 34.016 175.402 Td /F3 12.0 Tf  [(    \(\(instr \(tape-head tape\) st tm\))] TJ ET
+BT 34.016 162.952 Td /F3 12.0 Tf  [(     \(let \(\(inst \(instr \(tape-head tape\) st tm\)\)\))] TJ ET
+BT 34.016 150.502 Td /F3 12.0 Tf  [(       \(utmi \(fourth inst\))] TJ ET
+BT 34.016 138.051 Td /F3 12.0 Tf  [(             \(new-tape \(second inst\) \(third inst\) tape\))] TJ ET
+BT 34.016 125.601 Td /F3 12.0 Tf  [(             tm)] TJ ET
+BT 34.016 113.151 Td /F3 12.0 Tf  [(             \(- n 1\)\)\)\))] TJ ET
+BT 34.016 100.701 Td /F3 12.0 Tf  [(    ;; the symbol doesn't appear: must be HALT symbol, as it doesn't have lookup)] TJ ET
+BT 34.016 88.250 Td /F3 12.0 Tf  [(    \(t nil\)\)\))] TJ ET
+endstream
+endobj
+49 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Contents 50 0 R
+>>
+endobj
+50 0 obj
+<<
+/Length 4851 >>
+stream
+
+0.000 0.000 0.000 rg
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+BT 34.016 780.491 Td /F1 14.0 Tf  [(mtg.lisp)] TJ ET
+BT 34.016 757.235 Td /F3 12.0 Tf  [(;; An ACL2 implementation of an MTGTM.)] TJ ET
+BT 34.016 744.784 Td /F3 12.0 Tf  [(;; https://arxiv.org/abs/1904.09828)] TJ ET
+BT 34.016 732.334 Td /F3 12.0 Tf  [(;; MTGTM creature types.)] TJ ET
+BT 34.016 719.884 Td /F3 12.0 Tf  [(\(defconst *types*)] TJ ET
+BT 34.016 707.434 Td /F3 12.0 Tf  [(          '\(aetherborn basilisk cephalid demon elf faerie giant harpy illusion)] TJ ET
+BT 34.016 694.983 Td /F3 12.0 Tf  [(                       juggernaut kavu leviathan myr noggle orc pegasus rhino)] TJ ET
+BT 34.016 682.533 Td /F3 12.0 Tf  [(                       silver\)\))] TJ ET
+BT 34.016 670.083 Td /F3 12.0 Tf  [(;; MTGTM tape-creature colors)] TJ ET
+BT 34.016 657.633 Td /F3 12.0 Tf  [(\(defconst *tokencolor*)] TJ ET
+BT 34.016 645.182 Td /F3 12.0 Tf  [(          '\(white green\)\))] TJ ET
+BT 34.016 632.732 Td /F3 12.0 Tf  [(;; MTGTM creature type recognizer)] TJ ET
+BT 34.016 620.282 Td /F3 12.0 Tf  [(\(defun ctypep \(x\))] TJ ET
+BT 34.016 607.832 Td /F3 12.0 Tf  [(  \(member x *types*\)\))] TJ ET
+BT 34.016 595.381 Td /F3 12.0 Tf  [(;; MTGTM creature color recognizer)] TJ ET
+BT 34.016 582.931 Td /F3 12.0 Tf  [(\(defun ccolorp \(x\))] TJ ET
+BT 34.016 570.481 Td /F3 12.0 Tf  [(  \(member x *tokencolor*\)\))] TJ ET
+BT 34.016 558.031 Td /F3 12.0 Tf  [(;; Example tape-creature)] TJ ET
+BT 34.016 545.580 Td /F3 12.0 Tf  [(\(defconst *aetherborn-ex*)] TJ ET
+BT 34.016 533.130 Td /F3 12.0 Tf  [(  '\(aetherborn green 2 2\)\))] TJ ET
+BT 34.016 520.680 Td /F3 12.0 Tf  [(;; example rotlung)] TJ ET
+BT 34.016 508.230 Td /F3 12.0 Tf  [(\(defconst *rotlung-1<q1*)] TJ ET
+BT 34.016 495.779 Td /F3 12.0 Tf  [(  '\(T 'cephalid *aetherborn-ex* T\)\))] TJ ET
+BT 34.016 483.329 Td /F3 12.0 Tf  [(;; example xathrid)] TJ ET
+BT 34.016 470.879 Td /F3 12.0 Tf  [(;; note that \(rotlungp *xathrid-b2q1*\) will be true, since)] TJ ET
+BT 34.016 458.429 Td /F3 12.0 Tf  [(;; they both produce a creature, just that xathrid produces a tapped)] TJ ET
+BT 34.016 445.979 Td /F3 12.0 Tf  [(;; creature \(transitioning the state\))] TJ ET
+BT 34.016 433.528 Td /F3 12.0 Tf  [(\(defconst *xathrid-b2q1*)] TJ ET
+BT 34.016 421.078 Td /F3 12.0 Tf  [(  '\(nil kavu \(leviathan white 2 2\) nil\)\))] TJ ET
+BT 34.016 408.628 Td /F3 12.0 Tf  [(;; creature cards \(or tokens\) are of a type, have a color,)] TJ ET
+BT 34.016 396.178 Td /F3 12.0 Tf  [(;; and have power and toughness)] TJ ET
+BT 34.016 383.727 Td /F3 12.0 Tf  [(\(defun creaturep \(x\))] TJ ET
+BT 34.016 371.277 Td /F3 12.0 Tf  [(  \(and \(= \(length x\) 4\))] TJ ET
+BT 34.016 358.827 Td /F3 12.0 Tf  [(       \(ctypep \(first x\)\))] TJ ET
+BT 34.016 346.377 Td /F3 12.0 Tf  [(       \(ccolorp \(second x\)\))] TJ ET
+BT 34.016 333.926 Td /F3 12.0 Tf  [(       \(natp \(third x\)\))] TJ ET
+BT 34.016 321.476 Td /F3 12.0 Tf  [(       \(natp \(fourth x\)\)\)\))] TJ ET
+BT 34.016 309.026 Td /F3 12.0 Tf  [(;; a collection of creatures, where order does not matter)] TJ ET
+BT 34.016 296.576 Td /F3 12.0 Tf  [(\(defun creaturesp \(x\))] TJ ET
+BT 34.016 284.125 Td /F3 12.0 Tf  [(  \(cond \(\(endp x\) T\))] TJ ET
+BT 34.016 271.675 Td /F3 12.0 Tf  [(        \(\(consp x\) \(and \(creaturep \(first x\)\))] TJ ET
+BT 34.016 259.225 Td /F3 12.0 Tf  [(                       \(creaturesp \(rest x\)\)\)\)\)\))] TJ ET
+BT 34.016 246.775 Td /F3 12.0 Tf  [(;; rotlung renanimator- writes symbols when infest causes)] TJ ET
+BT 34.016 234.324 Td /F3 12.0 Tf  [(;; the head to die)] TJ ET
+BT 34.016 221.874 Td /F3 12.0 Tf  [(;; two booleans represent state)] TJ ET
+BT 34.016 209.424 Td /F3 12.0 Tf  [(\(defun rotlungp \(x\))] TJ ET
+BT 34.016 196.974 Td /F3 12.0 Tf  [(  \(and \(= \(length x\) 4\))] TJ ET
+BT 34.016 184.523 Td /F3 12.0 Tf  [(       \(booleanp \(first x\)\))] TJ ET
+BT 34.016 172.073 Td /F3 12.0 Tf  [(       \(ctypep \(second x\)\))] TJ ET
+BT 34.016 159.623 Td /F3 12.0 Tf  [(       \(creaturep \(third x\)\))] TJ ET
+BT 34.016 147.173 Td /F3 12.0 Tf  [(       \(booleanp \(fourth x\)\)\)\))] TJ ET
+BT 34.016 134.723 Td /F3 12.0 Tf  [(;; list of rotlungs)] TJ ET
+BT 34.016 122.272 Td /F3 12.0 Tf  [(\(defun rotlungsp \(x\))] TJ ET
+BT 34.016 109.822 Td /F3 12.0 Tf  [(  \(cond \(\(endp x\) T\))] TJ ET
+BT 34.016 97.372 Td /F3 12.0 Tf  [(        \(\(consp x\) \(and \(rotlungp \(first x\)\))] TJ ET
+BT 34.016 84.922 Td /F3 12.0 Tf  [(                        \(rotlungsp \(rest x\)\)\)\)\)\))] TJ ET
+BT 34.016 72.471 Td /F3 12.0 Tf  [(;; find the rotlung appropriate rotlung given state and type)] TJ ET
+BT 34.016 60.021 Td /F3 12.0 Tf  [(\(defun applicable \(tm typ st\))] TJ ET
+BT 34.016 47.571 Td /F3 12.0 Tf  [(  \(cond \(\(endp tm\) 'error\))] TJ ET
+BT 34.016 35.121 Td /F3 12.0 Tf  [(        \(\(consp tm\) \(if \(and \(equal \(first \(first tm\)\) st\))] TJ ET
+endstream
+endobj
+51 0 obj
+<< /Type /Page
+/Parent 3 0 R
+/Annots [ 53 0 R 55 0 R ]
+/Contents 52 0 R
+>>
+endobj
+52 0 obj
+<<
+/Length 5415 >>
+stream
+
+0.000 0.000 0.000 rg
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+BT 34.016 797.914 Td /F3 12.0 Tf  [(                            \(equal \(second \(first tm\)\) typ\)\))] TJ ET
+BT 34.016 785.464 Td /F3 12.0 Tf  [(                     \(first tm\))] TJ ET
+BT 34.016 773.014 Td /F3 12.0 Tf  [(                     \(applicable \(rest tm\) typ st\)\)\)\)\))] TJ ET
+BT 34.016 760.563 Td /F3 12.0 Tf  [(;; finds the head creature, of power and toughness 2/2)] TJ ET
+BT 34.016 748.113 Td /F3 12.0 Tf  [(\(defun find-head \(tape\))] TJ ET
+BT 34.016 735.663 Td /F3 12.0 Tf  [(  \(cond \(\(endp tape\) 'error\))] TJ ET
+BT 34.016 723.213 Td /F3 12.0 Tf  [(        \(\(consp tape\) \(if \(and \(= 2 \(third \(first tape\)\)\))] TJ ET
+BT 34.016 710.762 Td /F3 12.0 Tf  [(                               \(= 2 \(fourth \(first tape\)\)\)\))] TJ ET
+BT 34.016 698.312 Td /F3 12.0 Tf  [(                        \(first tape\))] TJ ET
+BT 34.016 685.862 Td /F3 12.0 Tf  [(                        \(find-head \(rest tape\)\)\)\)\)\))] TJ ET
+BT 34.016 673.412 Td /F3 12.0 Tf  [(;; move the computation)] TJ ET
+BT 34.016 660.961 Td /F3 12.0 Tf  [(;; return the new tape and a new state)] TJ ET
+BT 34.016 648.511 Td /F3 12.0 Tf  [(\(defun infest \(tape st tm\))] TJ ET
+BT 34.016 636.061 Td /F3 12.0 Tf  [(  \(let* \(\(hd \(find-head tape\)\))] TJ ET
+BT 34.016 623.611 Td /F3 12.0 Tf  [(        \(rlg \(applicable tm \(first hd\) st\)\)\))] TJ ET
+BT 34.016 611.160 Td /F3 12.0 Tf  [(  \(cons \(remove hd \(append \(list rlg\) tape\)\) \(fourth rlg\)\)\)\))] TJ ET
+BT 34.016 598.710 Td /F3 12.0 Tf  [(;; cast beam on creatures)] TJ ET
+BT 34.016 586.260 Td /F3 12.0 Tf  [(\(defun vigor-beam \(tape color\))] TJ ET
+BT 34.016 573.810 Td /F3 12.0 Tf  [(  \(cond \(\(endp tape\) nil\))] TJ ET
+BT 34.016 561.359 Td /F3 12.0 Tf  [(        \(\(consp tape\) \(if \(equal color \(second \(first tape\)\)\))] TJ ET
+BT 34.016 548.909 Td /F3 12.0 Tf  [(                     \(cons \(list \(first \(first tape\)\))] TJ ET
+BT 34.016 536.459 Td /F3 12.0 Tf  [(                                 \(second \(first tape\)\))] TJ ET
+BT 34.016 524.009 Td /F3 12.0 Tf  [(                                 \(+ 2 \(third \(first tape\)\)\))] TJ ET
+BT 34.016 511.559 Td /F3 12.0 Tf  [(                                 \(+ 2 \(fourth \(first tape\)\)\)\))] TJ ET
+BT 34.016 499.108 Td /F3 12.0 Tf  [(                           \(vigor-beam \(rest tape\) color\)\))] TJ ET
+BT 34.016 486.658 Td /F3 12.0 Tf  [(                     \(cons \(first tape\) \(vigor-beam \(rest tape\) color\)\)\)\)\)\))] TJ ET
+BT 34.016 474.208 Td /F3 12.0 Tf  [(;; termination condition)] TJ ET
+BT 34.016 461.758 Td /F3 12.0 Tf  [(\(defun victoryp \(tape1 tape2\))] TJ ET
+BT 34.016 449.307 Td /F3 12.0 Tf  [(  \(equal tape1 tape2\)\))] TJ ET
+BT 34.016 436.857 Td /F3 12.0 Tf  [(;; cast snuffers, dealing -1 -1 to all)] TJ ET
+BT 34.016 424.407 Td /F3 12.0 Tf  [(\(defun snuffers \(tape\))] TJ ET
+BT 34.016 411.957 Td /F3 12.0 Tf  [(  \(cond \(\(endp tape\) nil\))] TJ ET
+BT 34.016 399.506 Td /F3 12.0 Tf  [(        \(\(consp tape\) \(cons \(list \(first \(first tape\)\))] TJ ET
+BT 34.016 387.056 Td /F3 12.0 Tf  [(                               \(second \(first tape\)\))] TJ ET
+BT 34.016 374.606 Td /F3 12.0 Tf  [(                               \(- \(third \(first tape\)\) 1\))] TJ ET
+BT 34.016 362.156 Td /F3 12.0 Tf  [(                               \(- \(fourth \(first tape\)\) 1\)\))] TJ ET
+BT 34.016 349.705 Td /F3 12.0 Tf  [(                         \(snuffers \(rest tape\)\)\)\)\)\))] TJ ET
+BT 34.016 337.255 Td /F3 12.0 Tf  [(;; interpret this MTGTM for n steps or until termination, whichever comes first)] TJ ET
+BT 34.016 324.805 Td /F3 12.0 Tf  [(\(defun mtgi \(st tape tm n\))] TJ ET
+BT 34.016 312.355 Td /F3 12.0 Tf  [(  \(declare \(xargs :measure \(nfix n\)\)\))] TJ ET
+BT 34.016 299.904 Td /F3 12.0 Tf  [(  \(let* \(\(head \(find-head tape\)\))] TJ ET
+BT 34.016 287.454 Td /F3 12.0 Tf  [(        \(new \(infest tape st tm\)\))] TJ ET
+BT 34.016 275.004 Td /F3 12.0 Tf  [(        \(advanced \(vigor-beam \(first new\) \(second head\)\)\)\))] TJ ET
+BT 34.016 262.554 Td /F3 12.0 Tf  [(    \(cond \(\(zp n\) nil\))] TJ ET
+BT 34.016 250.103 Td /F3 12.0 Tf  [(          \(\(victoryp tape advanced\) nil\))] TJ ET
+BT 34.016 237.653 Td /F3 12.0 Tf  [(          \(T)] TJ ET
+BT 34.016 225.203 Td /F3 12.0 Tf  [(            \(mtgi \(second new\))] TJ ET
+BT 34.016 212.753 Td /F3 12.0 Tf  [(                  advanced)] TJ ET
+BT 34.016 200.303 Td /F3 12.0 Tf  [(                  tm)] TJ ET
+BT 34.016 187.852 Td /F3 12.0 Tf  [(                  \(- n 1\)\)\)\)\)\))] TJ ET
+0.000 0.000 0.000 RG
+34.016 167.362 m 561.264 167.362 l 560.514 166.612 l 34.766 166.612 l  f
+0.160 0.160 0.160 rg
+0.160 0.160 0.160 RG
+34.016 165.862 m 561.264 165.862 l 560.514 166.612 l 34.766 166.612 l  f
+561.264 167.362 m 561.264 165.862 l 560.514 166.612 l 560.514 166.612 l  f
+0.000 0.000 0.000 rg
+0.000 0.000 0.000 RG
+34.016 167.362 m 34.016 165.862 l 34.766 166.612 l 34.766 166.612 l  f
+BT 48.816 142.462 Td /F2 12.0 Tf  [(1.)] TJ ET
+0.000 0.000 0.800 rg
+BT 64.016 130.457 Td /F2 12.0 Tf  [(https://arxiv.org/pdf/1904.09828.pdf)] TJ ET
+0.000 0.000 0.800 RG
+0.6 w 0 J [  ] 0 d
+64.016 127.757 m 239.684 127.757 l S
+0.000 0.000 0.000 rg
+BT 239.684 130.457 Td /F2 12.0 Tf  [( )] TJ ET
+0.000 0.000 0.800 rg
+BT 242.684 130.457 Td /F2 12.0 Tf  [(?)] TJ ET
+0.6 w 0 J [  ] 0 d
+242.684 127.757 m 248.012 127.757 l S
+endstream
+endobj
+53 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 54 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 64.0157 129.3775 239.6837 141.2575 ]
+>>
+endobj
+54 0 obj
+<< /Type /Action
+/S /URI
+/URI (https://arxiv.org/pdf/1904.09828.pdf)
+>>
+endobj
+55 0 obj
+<< /Type /Annot
+/Subtype /Link
+/A 56 0 R
+/Border [0 0 0]
+/H /I
+/Rect [ 242.6837 129.3775 248.0117 141.2575 ]
+>>
+endobj
+56 0 obj
+<< /Type /Action
+>>
+endobj
+xref
+0 57
+0000000000 65535 f 
+0000000009 00000 n 
+0000000074 00000 n 
+0000000120 00000 n 
+0000000366 00000 n 
+0000000395 00000 n 
+0000000509 00000 n 
+0000000633 00000 n 
+0000009854 00000 n 
+0000009962 00000 n 
+0000010071 00000 n 
+0000010177 00000 n 
+0000010288 00000 n 
+0000010416 00000 n 
+0000010452 00000 n 
+0000010579 00000 n 
+0000010673 00000 n 
+0000010800 00000 n 
+0000010904 00000 n 
+0000011032 00000 n 
+0000011137 00000 n 
+0000011262 00000 n 
+0000011361 00000 n 
+0000011487 00000 n 
+0000011578 00000 n 
+0000011704 00000 n 
+0000011802 00000 n 
+0000011867 00000 n 
+0000018392 00000 n 
+0000018507 00000 n 
+0000018626 00000 n 
+0000024052 00000 n 
+0000024180 00000 n 
+0000024268 00000 n 
+0000024396 00000 n 
+0000024484 00000 n 
+0000024611 00000 n 
+0000024699 00000 n 
+0000024827 00000 n 
+0000024921 00000 n 
+0000025049 00000 n 
+0000025170 00000 n 
+0000025298 00000 n 
+0000025382 00000 n 
+0000025447 00000 n 
+0000030474 00000 n 
+0000030539 00000 n 
+0000035463 00000 n 
+0000035528 00000 n 
+0000040436 00000 n 
+0000040501 00000 n 
+0000045405 00000 n 
+0000045496 00000 n 
+0000050964 00000 n 
+0000051091 00000 n 
+0000051179 00000 n 
+0000051307 00000 n 
+trailer
+<<
+/Size 57
+/Root 1 0 R
+/Info 5 0 R
+>>
+startxref
+51343
+%%EOF
