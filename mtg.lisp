@@ -1,22 +1,29 @@
-;; An implementation of a UTM using magic the gathering rules.
+;; An ACL2 implementation of an MTGTM.
+;; https://arxiv.org/abs/1904.09828  
 
+;; MTGTM creature types.
 (defconst *types*
           '(aetherborn basilisk cephalid demon elf faerie giant harpy illusion
                        juggernaut kavu leviathan myr noggle orc pegasus rhino
                        silver))
 
+;; MTGTM tape-creature colors
 (defconst *tokencolor*
           '(white green))
 
+;; MTGTM creature type recognizer
 (defun ctypep (x)
   (member x *types*))
 
+;; MTGTM creature color recognizer
 (defun ccolorp (x)
   (member x *tokencolor*))
 
+;; Example tape-creature
 (defconst *aetherborn-ex*
   '(aetherborn green 2 2))
 
+;; TODO; fix this example
 ;; example rotlung
 (defconst *rotlung-1<q1*
   '(cephalid (sliver white 2 2 t)))
@@ -28,8 +35,8 @@
 (defconst *xathrid-b2q1*
   '(kavu (leviathan white 2 2 t)))
 
-;; creature cards (or tokens) are of a type, have a color, and have
-;; power and toughness, as well as if they are tapped
+;; creature cards (or tokens) are of a type, have a color,
+;; and have power and toughness
 (defun creaturep (x)
   (and (= (length x) 4)
        (ctypep (first x))
@@ -45,6 +52,7 @@
 
 ;; rotlung renanimator- writes symbols when infest causes
 ;; the head to die 
+;; has two states
 (defun rotlungp (x)
   (and (= (length x) 4)
        (booleanp (first x))
@@ -52,11 +60,13 @@
        (creaturep (third x))
        (booleanp (fourth x))))
 
+;; list of rotlungs
 (defun rotlungsp (x)
   (cond ((endp x) T)
         ((consp x) (and (rotlungp (first x))
                         (rotlungsp (rest x))))))
 
+;; find the rotlung appropriate to the production function
 (defun applicable (x c st)
   (cond ((endp x) 'error)
         ((consp x) (if (and (equal (second (first x)) c)
@@ -108,11 +118,11 @@
                                (- (fourth (first x)) 1))
                          (snuffers (rest x))))))
 
-;; need to prove termination
+;; interpret this MTGTM for n steps or until termination, whichever comes first
 (defun mtgi (st tape tm n)
   (declare (xargs :measure (nfix n)))
   (let ((advanced (infest (beam tape st) st)))
-    (cond ((zp n) tape)
+    (cond ((zp n) nil)
           ((victoryp advanced tape) nil)
           ((applicable tm (findhead tape) st)
            (let ((rlg (applicable tm (findhead tape) st)))
