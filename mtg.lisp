@@ -1,6 +1,7 @@
 ;; An ACL2 implementation of an MTGTM.
 ;; https://arxiv.org/abs/1904.09828  
 
+;; TODO: better variable names
 ;; MTGTM creature types.
 (defconst *types*
           '(aetherborn basilisk cephalid demon elf faerie giant harpy illusion
@@ -23,17 +24,16 @@
 (defconst *aetherborn-ex*
   '(aetherborn green 2 2))
 
-;; TODO; fix this example
 ;; example rotlung
 (defconst *rotlung-1<q1*
-  '(cephalid (sliver white 2 2 t)))
+  '(T 'cephalid *aetherborn-ex* T))
 
 ;; example xathrid 
 ;; note that (rotlungp *xathrid-b2q1*) will be true, since
 ;; they both produce a creature, just that xathrid produces a tapped
 ;; creature (transitioning the state)
 (defconst *xathrid-b2q1*
-  '(kavu (leviathan white 2 2 t)))
+  '(nil kavu (leviathan white 2 2) nil))
 
 ;; creature cards (or tokens) are of a type, have a color,
 ;; and have power and toughness
@@ -52,7 +52,7 @@
 
 ;; rotlung renanimator- writes symbols when infest causes
 ;; the head to die 
-;; has two states
+;; two booleans represent state
 (defun rotlungp (x)
   (and (= (length x) 4)
        (booleanp (first x))
@@ -66,73 +66,64 @@
         ((consp x) (and (rotlungp (first x))
                         (rotlungsp (rest x))))))
 
-;; find the rotlung appropriate to the production function
-(defun applicable (x c st)
-  (cond ((endp x) 'error)
-        ((consp x) (if (and (equal (second (first x)) c)
-                            (equal (first (first x)) st))
-                     (third (first x))
-                     (applicable (rest x) c st)))))
+;; find the rotlung appropriate rotlung given state and type
+(defun applicable (tm typ st)
+  (cond ((endp tm) 'error)
+        ((consp tm) (if (and (equal (first (first tm)) st)
+                            (equal (second (first tm)) typ))
+                     (first tm)
+                     (applicable (rest tm) typ st)))))
 
-
-;; identifies the unique two-two creature from a list of creatures
-;; essentially: finds the head of the tape
-(defun findhead (x)
-  (cond ((endp x) 'error)
-        ((consp x) (if (and (= 2 (third (first x)))
-                            (= 2 (fourth (first x))))
-                     (first x)
-                     (findhead (rest x))))))
-  
+;; finds the head creature, of power and toughness 2/2
+(defun find-head (tape)
+  (cond ((endp tape) 'error)
+        ((consp tape) (if (and (= 2 (third (first tape)))
+                               (= 2 (fourth (first tape))))
+                        (first tape)
+                        (find-head (rest tape))))))
 
 ;; move the computation
-;; find the appropriate rotlung, spawn its result, killt he creature 
-(defun infest (x st)
-  (let ((head (findhead x)))
-  (remove head (append (list (applicable x (second head) st)) x))))
+;; return the new tape and a new state
+(defun infest (tape st tm)
+  (let* ((hd (find-head tape))
+        (rlg (applicable tm (first hd) st)))
+  (cons (remove hd (append (list rlg) tape)) (fourth rlg))))
 
-;; move left or right
 ;; cast beam on creatures
-;; color is to be moved from
-(defun beam (x color)
-  (cond ((endp x) nil)
-        ((consp x) (if (equal color (second (first x)))
-                     (cons (list (first (first x))
-                                 (second (first x))
-                                 (+ 2 (third (first x)))
-                                 (+ 2 (fourth (first x))))
-                           (beam (rest x) color))
-                     (cons (first x) (beam (rest x) color))))))
+(defun vigor-beam (tape color)
+  (cond ((endp tape) nil)
+        ((consp tape) (if (equal color (second (first tape)))
+                     (cons (list (first (first tape))
+                                 (second (first tape))
+                                 (+ 2 (third (first tape)))
+                                 (+ 2 (fourth (first tape))))
+                           (vigor-beam (rest tape) color))
+                     (cons (first tape) (vigor-beam (rest tape) color))))))
                    
-
-;; where x and y are states
-(defun victoryp (x y)
-  (equal x y))
+;; termination condition
+(defun victoryp (tape1 tape2)
+  (equal tape1 tape2))
 
 ;; cast snuffers, dealing -1 -1 to all
-(defun snuffers (x)
-  (cond ((endp x) nil)
-        ((consp x) (cons (list (first (first x))
-                               (second (first x))
-                               (- (third (first x)) 1)
-                               (- (fourth (first x)) 1))
-                         (snuffers (rest x))))))
+(defun snuffers (tape)
+  (cond ((endp tape) nil)
+        ((consp tape) (cons (list (first (first tape))
+                               (second (first tape))
+                               (- (third (first tape)) 1)
+                               (- (fourth (first tape)) 1))
+                         (snuffers (rest tape))))))
+
 
 ;; interpret this MTGTM for n steps or until termination, whichever comes first
 (defun mtgi (st tape tm n)
   (declare (xargs :measure (nfix n)))
-  (let ((advanced (infest (beam tape st) st)))
+  (let* ((head (find-head tape))
+        (new (infest tape st tm))
+        (advanced (vigor-beam (first new) (second head))))
     (cond ((zp n) nil)
-          ((victoryp advanced tape) nil)
-          ((applicable tm (findhead tape) st)
-           (let ((rlg (applicable tm (findhead tape) st)))
-             (mtgi (fourth rlg)
-                   advanced
-                   tm
-                   (- n 1))))
-          (t nil))))
-    
-
-
-
-
+          ((victoryp tape advanced) nil)
+          (T
+            (mtgi (second new)
+                  advanced
+                  tm
+                  (- n 1))))))
