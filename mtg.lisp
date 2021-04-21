@@ -137,15 +137,19 @@
 
 ;; finds the head creature, of power and toughness 2/2
 (defun find-head (tape)
-  (cond ((endp tape) nil)
-        ((consp tape) (if (and (= 2 (third (first tape)))
-                               (= 2 (fourth (first tape))))
-                        (first tape)
-                        (find-head (rest tape))))))
+  (cond 
+    ;; if no head, we write the blank symbol
+    ((endp tape) '(cephalid white 2 2))
+    ;; otherwise, search the tape (reaching endp here should be an error, 
+    ;; fortunately we have well formed tape for that?
+    ((consp tape) (if (and (= 2 (third (first tape)))
+                           (= 2 (fourth (first tape))))
+                      (first tape)
+                      (find-head (rest tape))))))
 
 ;; move the computation
 ;; return the new tape and a new state
-(defun infest (tape st tm)
+(defun infest (st tape tm)
   (let* ((hd (find-head tape))
          (rlg (applicable tm (first hd) st)))
   (cons (remove-equal hd (append (list (third rlg)) tape)) (fourth rlg))))
@@ -154,10 +158,10 @@
 (defun vigor-beam (tape color)
   (cond ((endp tape) nil)
         ((consp tape) (if (equal color (second (first tape)))
-                     (cons (list (first (first tape))
-                                 (second (first tape))
-                                 (+ 2 (third (first tape)))
-                                 (+ 2 (fourth (first tape))))
+                      (cons (list (first (first tape))
+                                  (second (first tape))
+                                  (+ 2 (third (first tape)))
+                                  (+ 2 (fourth (first tape))))
                            (vigor-beam (rest tape) color))
                      (cons (first tape) (vigor-beam (rest tape) color))))))
                    
@@ -179,21 +183,51 @@
 (defun mtgi (st tape tm n)
   (declare (xargs :measure (nfix n)))
   ;; step the tm by 1 step before deciding our next course of action
-  (let* ((head (find-head tape)) ;; find the current head of the tape
+  (let* (;; compute the new tape by removing the head and adding a new one
+         (new (infest st tape tm))
 
-         ;; compute the new tape by removing the head and adding a new one
-         (new (infest tape st tm))
+         ;; get the new head from the new tape
+         (new-head (find-head (car new)))
 
          ;; advance the tape by one step, 
-         (advanced (snuffers (vigor-beam (first new) (second head)))))
+         (advanced (snuffers (vigor-beam (car new) (second new-head)))))
     (cond 
       ;; we're done taking steps
       ((zp n) nil)
       ;; head is an assassin: we've halted
-      ((equal (first head) 'assassin) tape)
+      ((equal (first new-head) 'assassin) advanced)
       ;; otherwise, keep running the tape
-      (t (mtgi (second new) advanced tm (- n 1))))))
+      (t (mtgi (cdr new) advanced tm (- n 1))))))
 
+(defconst *name-map* 
+  '((aetherborn a)
+    (basilisk b)
+    (cephalid c)
+    (demon d)
+    (elf e)
+    (faerie f)
+    (giant g)
+    (harpy h)
+    (illusion i)
+    (juggernaut j)
+    (kavu k)
+    (leviathan l)
+    (myr m)
+    (noggle n)
+    (orc o)
+    (pegasus p)
+    (rhino r)
+    (sliver s)
+    (assassin HALT)))
+
+(defun map-creature-name (creature)
+  (second (assoc (first creature) *name-map*)))
+
+(defun map-creature-names (creatures)
+  (cond
+    ((endp creatures) nil)
+    ((consp creatures) (cons (map-creature-name (first creatures))
+                             (map-creature-names (rest creatures))))))
 
 ;; order this mtg tape 
 ;; first, we need to define insert: by modelling
@@ -202,7 +236,7 @@
 
 ;; defines the greater than relation on creatures
 (defun gt-creature (c1 c2)
-  (<= (fourth c1) (fourth c2)))
+  (> (fourth c1) (fourth c2)))
 
 ;; inserts a creature into a list of creatures
 (defun insert-creature (creature l) 
@@ -223,29 +257,30 @@
 ;; we then need the different "pieces" of the tape, so we 
 ;; can model the pieces of the half tape
 
-;; this gets us the left side of the half tape
-;; we exclude the head, regardless of color
+;; this gets us the right side of the half tape
+;; we include the head, regardless of color
 (defun white-creatures (creatures)
   (cond
     ((endp creatures) nil)
     ((consp creatures)
-      (if (and 
+      (if (or 
             (equal 'white (second (first creatures)))
-            (not (equal 2 (fourth (first creatures)))))
+            (equal 2 (fourth (first creatures))))
           (cons (first creatures) (white-creatures (rest creatures)))
           (white-creatures (rest creatures))))))
 
-;; this gets us the right side of the half tape
-;; one minor difference, though: we get the head here as well
+;; this gets us the left side of the half tape
+;; we exclude the head, regardless of color
+;; need to get halt symbol, as well... decide on that behavior
 (defun green-creatures (creatures)
   (cond
     ((endp creatures) nil)
     ((consp creatures)
-      (if (or 
+      (if (and 
             (equal 'green (second (first creatures)))
-            (equal 2 (fourth (first creatures))))
-          (cons (first creatures) (white-creatures creatures))
-          (white-creatures creatures)))))
+            (not (equal 2 (fourth (first creatures)))))
+          (cons (first creatures) (green-creatures (rest creatures)))
+          (green-creatures (rest creatures))))))
 
 ;; we are now equipped to transform an arbitrary battlefield of creatures
 ;; into the structure of an mtg tape, preserving the ordering information for now
@@ -278,6 +313,84 @@
     (t (and (gt-creature (second creatures) (first creatures))
             (ordered-creatures (rest creatures))))))
 
+(defun render-mtg-tape (creatures)
+  (cons
+    (map-creature-names (isort-creatures (green-creatures creatures)))
+    (list (map-creature-names (isort-creatures (white-creatures creatures))))))
+
+;; equivalent to the example-tape in utm.lisp
+(defconst *example-mtg-tape*
+  '(  (faerie green 3 3)
+      (aetherborn green 4 4)
+      (faerie green 5 5)
+      (aetherborn green 6 6)
+      (aetherborn green 7 7)
+      (faerie green 8 8)
+      (faerie green 9 9)
+      (aetherborn green 10 10)
+      (aetherborn green 11 11)
+      (aetherborn green 12 12)
+      (aetherborn green 13 13)
+      (aetherborn green 14 14)
+      (aetherborn green 15 15)
+      (aetherborn green 16 16)
+      (aetherborn green 17 17)
+      (aetherborn green 18 18)
+      (aetherborn green 19 19)
+      (aetherborn green 20 20)
+      (faerie green 21 21)
+      (aetherborn green 22 22)
+      (aetherborn green 23 23)
+      (aetherborn green 24 24)
+      (aetherborn green 25 25)
+      (aetherborn green 26 26)
+      (faerie green 27 27)
+      (faerie green 28 28)
+      (aetherborn green 29 29)
+      (faerie green 30 30)
+      (aetherborn green 31 31)
+      (aetherborn green 32 32)
+      (aetherborn green 33 33)
+      (aetherborn green 34 34)
+      (aetherborn green 35 35)
+      (aetherborn green 36 36)
+      (aetherborn green 37 37)
+      (aetherborn green 38 38)
+      (aetherborn green 39 39)
+      (aetherborn green 40 40)
+      (aetherborn green 41 41)
+      (aetherborn green 42 42)
+      (faerie green 43 43)
+      (aetherborn green 44 44)
+      (aetherborn green 45 45)
+      (aetherborn green 46 46)
+      (aetherborn green 47 47)
+      (aetherborn green 48 48)
+      (aetherborn green 49 49)
+      (aetherborn green 50 50)
+      (aetherborn green 51 51)
+      (faerie green 52 52)
+      (faerie green 53 53)
+      (rhino green 54 54)
+      (rhino green 55 55)
+
+      (faerie white 2 2)
+      (aetherborn white 3 3)
+      (myr white 4 4)
+      (aetherborn white 5 5)
+      (aetherborn white 6 6)
+      (aetherborn white 7 7)
+      (aetherborn white 8 8)
+      (myr white 9 9)
+      (aetherborn white 10 10)
+      (aetherborn white 11 11)
+      (aetherborn white 12 12)
+      (aetherborn white 13 13)
+      (aetherborn white 14 14)
+      (aetherborn white 15 15)
+      (aetherborn white 16 16)
+      (myr white 17 17) ))
+
 (defthm ordered-isort-creatures
   (implies
     (creaturesp creatures)
@@ -289,6 +402,7 @@
 ;; to do so, we need to set up an inductive proof, since it's not quite
 ;; as trivial to admit for creatures as it is for integers. (why?)
 
+;; used
 (defthm insert-is-member
   (implies 
     (and
@@ -296,11 +410,31 @@
       (creaturesp creatures))
     (mem c (insert-creature c creatures))))
 
-(defthm isort-is-creaturesp
+;; not used
+(defthm isort-consp
   (implies 
+    (and 
+      (consp creatures)
+      (creaturesp creatures))
+    (equal (isort-creatures creatures) 
+      (insert-creature (first creatures) 
+                       (isort-creatures (rest creatures))))))
+
+;; not used
+(defthm insert-preserves-first
+  (implies
+    (and
+      (consp creatures)
+      (creaturesp creatures))
+    (mem (first creatures) (insert-creature (first creatures) (isort-creatures (rest creatures))))))
+
+;; used
+(defthm isort-is-creaturesp
+  (implies
     (creaturesp creatures)
     (creaturesp (isort-creatures creatures))))
 
+;; used
 (defthm isort-preserves-first
   (implies
     (and
@@ -318,17 +452,19 @@
     (permutation creatures (isort-creatures creatures))))
 
 ;; cons case
-(defthm isort-is-permutation-cons
-  (implies
-    (and
-      (consp creatures)
-      (creaturesp creatures)
-      ;; induction step
-      (implies 
-        (and
-          (creaturesp creatures))
-          (permutation (rest creatures) (del (first creatures) (isort-creatures creatures)))))
-    (permutation creatures (isort-creatures creatures))))
+;; something in the logical history helped prove this, and i need to know what
+; (defthm isort-is-permutation-cons
+;   (implies
+;     (and
+;       (consp creatures)
+;       (creaturesp creatures)
+;       ;; induction step
+;       (implies 
+;         (and
+;           (consp creatures)
+;           (creaturesp creatures))
+;           (permutation (rest creatures) (del (first creatures) (isort-creatures creatures)))))
+;     (permutation creatures (isort-creatures creatures))))
 
 
 ;; determines if the creatures are arranged in progressive order: that is, every creature is either
@@ -351,10 +487,16 @@
   (and
     (consp creatures)
     (creaturesp creatures)
-    (contains-toughness (green-creatures creatures) 2)
-    (not (contains-toughness (white-creatures creatures) 2))
+    (find-head (green-creatures creatures))
+    (not (find-head (white-creatures creatures)))
     (sequential (isort-creatures (white-creatures creatures)))
     (sequential (isort-creatures (green-creatures creatures)))))
+
+(defun mtg-haltedp (creatures)
+  (cond
+    ((endp creatures) nil)
+    ((consp creatures) (or (equal (first (first creatures)) 'assassin)
+                       (mtg-haltedp (rest creatures))))))
 
 
 ;; how to unite them into one proof? not sure..
@@ -379,31 +521,20 @@
     (cond
       ((endp res) nil)
       ((consp res) (cons (isort-creatures (green-creatures res))
-                         (isort-creatures (white-creatures res)))))))
+                         (list (isort-creatures (white-creatures res))))))))
 
+;; everything up to here submits
+
+;; will need addiitonal lemmas, most likely
 (defthm mtgi-is-well-formed
   (implies
     (and
       (booleanp st)
       (well-formed-battlefield creatures)
       (natp n)
-      (> n 0))
-    (if (mtgi st creatures *rogozhin-rotlungs* n)
-        (well-formed-battlefield (mtgi st creatures *rogozhin-rotlungs* n))
-        (endp (mtgi st creatures *rogozhin-rotlungs n)))))
-
-;; prove that running mtgi will either result in a new head, or the tape is empty.
-;; this is weird... it shouldn't be able to determine this?
-(defthm new-head-exists
-  (implies
-    (and
-      (booleanp st)
-      (well-formed-battlefield creatures)
-      (natp n)
-      (> n 0))
-    (or (endp (mtgi st creatures *rogozhin-rotlungs* n))
-        (find-head (mtgi st creatures *rogozhin-rotlungs* n)))))
-
+      (> n 0)
+      (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n)))
+    (well-formed-battlefield (mtgi st creatures *rogozhin-rotlungs* n))))
 
 
 ;; prove that running mtgi and ordering the input is a permutation -- not bad?
