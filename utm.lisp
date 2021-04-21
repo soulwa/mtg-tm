@@ -95,7 +95,7 @@
    ;; both of these are termination conditions
    ((< (length tape) m) tape)
    ((zp n) `(nil ,tape))
-   (t (utm-exec m funcs (tag-step m funcs tape) (- n 1)))))
+   (t (tag-exec m funcs (tag-step m funcs tape) (- n 1)))))
 
 ;; wrapper for utm-exec, which works on a tag system construct
 (defun tag-sys-exec (tag-sys n)
@@ -112,43 +112,44 @@
 (defconst *rogozhin-states*
   '(q1 q2))
 
-(defconst *utm-2-18-prog*
-  '((q1 1 c2 L q1)
-    (q1 1> 1<1 R q1)
-    (q1 1< c2 L q1)
-    (q1 1>1 1 R q1)
+(defconst *utm-2-18*
+  '((q1 1   c2  L q1)
+    (q1 1>  1<1 R q1)
+    (q1 1<  c2  L q1)
+    (q1 1>1 1   R q1)
     (q1 1<1 1>1 L q1)
-    (q1 b b< R q1)
-    (q1 b> b<1 R q1)
-    (q1 b< b L q1)
-    (q1 b>1 b R q1)
+    (q1 b   b<  R q1)
+    (q1 b>  b<1 R q1)
+    (q1 b<  b   L q1)
+    (q1 b>1 b   R q1)
     (q1 b<1 b>1 L q1)
-    (q1 b2 b3 L q2)
-    (q1 b3 b>1 L q2)
-    (q1 c 1> L q2)
-    (q1 c> c< R q1)
-    (q1 c< c>1 L q1)
-    (q1 c>1 c<1 L q1)
+    (q1 b2  b3  L q2)
+    (q1 b3  b>1 L q2)
+    (q1 c   1>  L q2)
+    (q1 c>  c<  R q1)
+    (q1 c<  c>1 L q1)
+    (q1 c>1 c<1 R q2)
     (q1 c<1 HALT nil nil)
-    (q1 c2 1< R q1)
-    (q2 1 1< R q2)
-    (q2 1> 1< R q2)
-    (q2 1< 1> L q2)
+    (q1 c2  1<  R q1)
+
+    (q2 1   1<  R q2)
+    (q2 1>  1<  R q2)
+    (q2 1<  1>  L q2)
     (q2 1>1 1<1 R q2)
-    (q2 1<1 1 L q2)
-    (q2 b b2 R q1)
-    (q2 b> b< R q2)
-    (q2 b< b> L q2)
+    (q2 1<1 1   L q2)
+    (q2 b   b2  R q1)
+    (q2 b>  b<  R q2)
+    (q2 b<  b>  L q2)
     (q2 b>1 b<1 R q2)
-    (q2 b<1 b> L q2)
-    (q2 b2 b R q1)
-    (q2 b3 b<1 R q2)
-    (q2 c c< R q2)
-    (q2 c> c< R q2)
-    (q2 c< c> L q2)
-    (q2 c>1 c2 R q2)
-    (q2 c<1 c2 L q1)
-    (q2 c2 c L q2)))
+    (q2 b<1 b>  L q2)
+    (q2 b2  b   R q1)
+    (q2 b3  b<1 R q2)
+    (q2 c   c<  R q2)
+    (q2 c>  c<  R q2)
+    (q2 c<  c>  L q2)
+    (q2 c>1 c2  R q2)
+    (q2 c<1 c2  L q1)
+    (q2 c2  c   L q2)))
 
 ;; represents a symbol that's part of a UTM(2, 18)
 (defun utm-symbolp (x)
@@ -187,14 +188,14 @@
   (if (consp x) (first x) '1<))
 
 ;; get the next instruction for a utm, given a symbol, state, and a program
-(defun instr (sym st progm)
+(defun instr (sym st tm)
   (cond
-    ((endp progm) nil) ;; error
+    ((endp tm) nil) ;; error
     ((and
-      (equal st (first (first progm)))
-      (equal sym (second (first progm))))
-     (sym (first progm)))
-    (t (instr sym st (rest progm)))))
+      (equal st (first (first tm)))
+      (equal sym (second (first tm))))
+     (first tm))
+    (t (instr sym st (rest tm)))))
 
 ;; definition of tape based on tmi-reductions.lisp
 
@@ -233,23 +234,26 @@
 
 ;; gets the head of the tape
 (defun tape-head (tape) 
-  (sym (rest tape)))
+  (sym (second tape)))
 
 ;; generates a new tape given a new mark to write
 ;; and a direction to move in
 (defun new-tape (mark dir tape)
   ;; shadow tape with the new tape, since we always replace the mark
-  (let ((tape (cons (first tape) (cons mark (rest (rest tape))))))
+  (let ((tape (cons (first tape) (list (cons mark (rest (second tape)))))))
     (case dir
       ;; push head to the beginning of (first tape), which
       ;; represents the order of the symbols backwards
       (L (cons (rest (first tape))
-               (cons (sym (first tape))
-                     (rest tape))))
+               (list
+                (cons (sym (first tape))
+                      (second tape)))))
       ;; add new symbol to second half of tape
-      (R (cons (cons (sym (rest tape))
+      (R (cons (cons (sym (second tape))
                      (first tape))
-               (rest (rest tape)))))))
+               (list (rest (second tape)))))
+      ;; don't do anything (halted)
+      (t tape))))
 
 ;; runs a UTM on a given tape
 (defun utmi (st tape tm n)
@@ -260,12 +264,38 @@
     ;; the symbol appears in the progm
     ((instr (tape-head tape) st tm) 
      (let ((inst (instr (tape-head tape) st tm)))
-       (utmi (fourth inst)
-             (new-tape (second inst) (third inst) tape)
+       (utmi (fifth inst)
+             (new-tape (third inst) (fourth inst) tape)
              tm
              (- n 1))))
     ;; the symbol doesn't appear: must be HALT symbol, as it doesn't have lookup
-    (t nil)))
+    (t tape)))
+
+(defconst *example-tape* 
+  '((b 1 b 1 1 b b 1 1 1 1 1 1 1 1 1 1 1 b 1 1 1 1 1 b b 1 b 1 1 1 1 1 1 1 1 1 1 1 1 b 1 1 1 1 1 1 1 1 b b c<1 c<1)
+    (b 1 c 1 1 1 1 c 1 1 1 1 1 1 1 c)))
+
+(defthm utmi-demo
+  (and
+    (equal
+      (utmi 'q1 *example-tape* *utm-2-18* 6002)
+      nil)
+    (equal
+      (utmi 'q1 *example-tape* *utm-2-18* 6003)
+      '(nil (HALT C2 B> B> 1> 1> 1> 1> 1> 1> 1> 1> B> 1> 1> 1> 1>
+        1> 1> 1> 1> 1> 1> 1> 1> B> 1> B> B> 1> 1> 1> 1> 1> B> 1> 
+        1> 1> 1> 1> 1> 1> 1> 1> 1> 1> B> B> 1> 1> B> 1> B> B> 1> 
+        1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 
+        1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1 1 1 1 1 1 1 C 1 C 1 C)))
+    (equal
+      (utmi 'q1 *example-tape* *utm-2-18* 100000)
+      '(nil (HALT C2 B> B> 1> 1> 1> 1> 1> 1> 1> 1> B> 1> 1> 1> 1>
+        1> 1> 1> 1> 1> 1> 1> 1> B> 1> B> B> 1> 1> 1> 1> 1> B> 1> 
+        1> 1> 1> 1> 1> 1> 1> 1> 1> 1> B> B> 1> 1> B> 1> B> B> 1> 
+        1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 
+        1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1 1 1 1 1 1 1 C 1 C 1 C)))))
+
+
 
 
 
