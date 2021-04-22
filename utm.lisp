@@ -295,6 +295,23 @@
         1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 
         1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1> 1 1 1 1 1 1 1 C 1 C 1 C)))))
 
+(defun haltedp (tape)
+  (equal (tape-head tape) 'HALT))
+
+;; everything up to here submits
+
+;; will likely need additional lemmas
+;; refer to moore's paper for these?
+(defthm utmi-stays-terminated
+  (implies
+    (and
+      (utm-statep st)
+      (tapep tape)
+      (natp n)
+      (natp m)
+      (haltedp (utmi st tape *utm-2-18* n)))
+    (haltedp (utmi st tape *utm-2-18* (+ m n)))))
+
 
 
 
