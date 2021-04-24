@@ -112,12 +112,12 @@
                         (rotlungsp (rest x))))))
 
 ;; find the rotlung appropriate rotlung given state and type
-(defun find-rotlung (st typ tm)
+(defun find-rotlung (tm typ st)
   (cond ((endp tm) nil)
         ((consp tm) (if (and (equal (first (first tm)) st)
                              (equal (second (first tm)) typ))
 			(first tm)
-		      (find-rotlung st typ (rest tm))))))
+		      (find-rotlung (rest tm) typ st)))))
 
 ;; finds the head creature, of power and toughness 2/2
 (defun find-head (tape)
@@ -166,10 +166,10 @@
 (defun mtgi (st tape tm n)
   (declare (xargs :measure (nfix n)))
   (let* ((head (find-head tape))
-         (rlg  (find-rotlung st (first head) tm)))
+         (rlg  (find-rotlung tm (first head) st)))
     (cond 
      ;; done taking steps (doesn't halt in n steps)
-     ((zp n) nil)
+     ((zp n) tape)
      ;; produce a new tape with the given production function
      (rlg (mtgi (fourth rlg) (new-tape (third rlg) head tape) tm (- n 1)))
      ;; halted in n steps (no prod. function available, must be halt symbol)
@@ -239,34 +239,36 @@
 ;; we then need the different "pieces" of the tape, so we 
 ;; can model the pieces of the half tape
 
+;; this gets us the right side of the half tape
+;; we include the head, regardless of color
+(defun white-creatures (creatures)
+  (cond
+   ((endp creatures) nil)
+   ((consp creatures)
+    (if (or 
+	 (equal 'white (second (first creatures)))
+	 (equal 2 (fourth (first creatures))))
+	(cons (first creatures) (white-creatures (rest creatures)))
+      (white-creatures (rest creatures))))))
 
 ;; this gets us the left side of the half tape
 ;; we exclude the head, regardless of color
-(defun left-tape (creatures)
+;; need to get halt symbol, as well... decide on that behavior
+(defun green-creatures (creatures)
   (cond
    ((endp creatures) nil)
    ((consp creatures)
-    (if (not (equal 'white (second (first creatures))))
-	(cons (first creatures) (left-tape (rest creatures)))
-      (left-tape (rest creatures))))))
-
-;; this gets us the right side of the half tape
-;; we include the head, regardless of color
-(defun right-tape (creatures)
-  (cond
-   ((endp creatures) nil)
-   ((consp creatures)
-    (if (or
-	 (equal 'white (second (first creatures)))
-	 (equal 2 (third (first creatures))))
-	(cons (first creatures) (right-tape (rest creatures)))
-      (right-tape (rest creatures))))))
+    (if (and 
+	 (equal 'green (second (first creatures)))
+	 (not (equal 2 (fourth (first creatures)))))
+	(cons (first creatures) (green-creatures (rest creatures)))
+      (green-creatures (rest creatures))))))
 
 ;; we are now equipped to transform an arbitrary battlefield of creatures
 ;; into the structure of an mtg tape, preserving the ordering information for now
 (defun battlefield-to-tape (creatures)
-  (cons (isort-creatures (left-tape creatures))
-        (isort-creatures (right-tape creatures))))
+  (cons (isort-creatures (white-creatures creatures))
+        (isort-creatures (green-creatures creatures))))
 
 ;; shows that some tape contains a card of a given 
 ;; Listof Creature Nat -> Boolean
@@ -295,8 +297,8 @@
 
 (defun render-mtg-tape (creatures)
   (cons
-   (map-creature-names (isort-creatures (left-tape creatures)))
-   (list (map-creature-names (isort-creatures (right-tape creatures))))))
+   (map-creature-names (isort-creatures (green-creatures creatures)))
+   (list (map-creature-names (isort-creatures (white-creatures creatures))))))
 
 ;; equivalent to the example-tape in utm.lisp
 (defconst *example-mtg-tape*
@@ -407,21 +409,15 @@
 		(creatures (isort-creatures (rest creatures)))))
     :expand (isort-creatures creatures))))
 
-;; don't have acl2 worry about all the typing nonsense...
-(defthm isort-is-perm
-  (perm (isort-creatures creatures) creatures)
-  :hints
-  (("Goal"
-    :induct (isort-creatures creatures))))
+;; (defcong perm perm (insert-creature c creatures) 2)
 
-;; ...until now!
-(defthm isort-creatures-is-perm
-  (implies
+(defthm isort-is-perm
+  (implies 
    (creaturesp creatures)
    (perm (isort-creatures creatures) creatures))
   :hints
   (("Goal"
-    :use ((:instance isort-is-perm (creatures creatures))))))
+    :induct (isort-creatures creatures))))
 
 ;; determines if the creatures are arranged in progressive order: that is, every creature is either
 ;; - the head, or
@@ -443,107 +439,54 @@
   (and
    (consp creatures)
    (creaturesp creatures)
-   (find-head (right-tape creatures))
-   (not (find-head (left-tape creatures)))
-   (sequential (isort-creatures (right-tape creatures)))
-   (sequential (isort-creatures (left-tape creatures)))))
+   (find-head (green-creatures creatures))
+   (not (find-head (white-creatures creatures)))
+   (sequential (isort-creatures (white-creatures creatures)))
+   (sequential (isort-creatures (green-creatures creatures)))))
 
-;; determines if this tape is halted
 (defun mtg-haltedp (creatures)
   (cond
    ((endp creatures) nil)
-   ((consp creatures) (equal (first (find-head creatures)) 'assassin))))
+   ((consp creatures) (or (equal (first (first creatures)) 'assassin)
+			  (mtg-haltedp (rest creatures))))))
 
-;; confirms that the head always exists for a well-formed tape
+;; need to next show that some operations, once we resort the list, will remain true (ie the 2/2 thing)
 (defthm head-exists-and-is-two-two
   (implies
    (well-formed-battlefield creatures)
    (= (third (find-head creatures)) 2)))
 
-;; tape is only halted if the head is assassin
-(defthm halted-iff-head-assassin
-  (implies
-   (well-formed-battlefield creatures)
-   (iff (equal (first (find-head creatures)) 'assassin)
-	(mtg-haltedp creatures))))
+(defun mtgi* (st tape tm n)
+  (let ((res (mtgi st tape tm n)))
+    (cond
+     ((endp res) nil)
+     ((consp res) (cons (isort-creatures (green-creatures res))
+			(list (isort-creatures (white-creatures res))))))))
 
-(defthm assassin-lookup-is-nil
-  (implies
-   (booleanp st)
-   (equal (find-rotlung *rogozhin-rotlungs* 'assassin st) nil)))
-
-;; mtgi will halt on assassin (note: improve this to __only__ halt)
-(defthm mtgi-halts-on-assassin
+;; will need addiitonal lemmas, most likely
+(defthm mtgi-is-well-formed
   (implies
    (and
     (booleanp st)
-    (creaturesp creatures)
-    (equal (first (find-head creatures)) 'assassin)
-    (natp n)
-    (> n 0))
-   (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n))))
-
-;; using the above theorem, we can show that mtgi stays halted
-;; (note: update to show this is equivalent to running for (+ n m)
-(defthm mtgi-stays-halted
-  (implies
-   (and
-    (booleanp st)
-    (creaturesp creatures)
-    (natp n)
-    (natp m)
-    (> m 0)
-    (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n)))
-   (mtg-haltedp (mtgi st
-		      (mtgi st creatures *rogozhin-rotlungs* n)
-		      *rogozhin-rotlungs*
-		      m)))
-  :hints
-  (("Goal" :use ((:instance mtgi-halts-on-assassin
-			    (st st)
-			    (creatures (mtgi st creatures *rogozhin-rotlungs* n))
-			    (n m))))))
-
-;; need some additional lemmas to help prove well-formedness
-;; essentially: demonstrate effects of infest, move, new-tape
-;; on the tape, proving each time that a well-formed tape
-;; maintains these properties
-;; then, we can show that when mtgi terminates, it does so
-;; with a well-formed tape (ie, it can be mapped)
-
-;; show: only 1 head, so snuffers/vigor-beam will produce a new head
-;; and keep all creatures > 1 hp, by our invariants
-;; infest will remove the head beforehand
-
-;; this is the lemma we want to build up to
-(defthm new-tape-is-well-formed
-  (implies
-   (and
     (well-formed-battlefield creatures)
-    (creaturep new-head)
-    (equal (third new-head) 2))
-   (well-formed-battlefield (new-tape new-head (find-head creatures) creatures))))
+    (natp n)
+    (> n 0)
+    (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n)))
+   (well-formed-battlefield (mtgi st creatures *rogozhin-rotlungs* n))))
 
-;; will need additional lemmas, most likely
-;; (defthm mtgi-is-well-formed
-;;   (implies
-;;    (and
-;;     (booleanp st)
-;;     (well-formed-battlefield creatures)
-;;     (natp n)
-;;     (> n 0)
-;;     (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n)))
-;;    (well-formed-battlefield (mtgi st creatures *rogozhin-rotlungs* n))))
+
+;; prove that running mtgi and ordering the input is a permutation -- not bad?
+;; we already have the permutation, and are defining the ordered property ourselves
+
 
 ;; prove that mtgi-ord produces the same output as ordering after the fact
-;; something like
-;; (defthm mtgi-is-mtgi-ord-is-mtgi) or vice versa, we can map between them
+
 
 ;; reduce the output down to just the symbols with a mapper
-;; (defun map-mtg (creatures)
-;;   (cond
-;;     ((endp creatures) nil)
-;;     ((consp creatures)))
+					; (defun map-mtg (creatures)
+					;   (cond
+					;     ((endp creatures) nil)
+					;     ((consp creatures)))
 
 ;; prove that the symbols are isomorphic to the rogozhin alphabet
 
@@ -581,15 +524,16 @@
    ((consp creatures) (cons (map-creature (first creatures))
 			    (map-tape (rest creatures))))))
 
-;; (defun mtgi-ord (st tape tm n)
-;;   (declare (xargs :measure (nfix n)))
-;;   (cond
-;;     ;; done taking steps
-;;     ((zp n) nil)
-;;     ;; symbol appears in the program
-;;     (())
-;;     ;; symbol we don't recognize: must be a halt!
-;;     (t tape)
+					; (defun mtgi-ord (st tape tm n)
+					;   (declare (xargs :measure (nfix n)))
+					;   (cond
+					;     ;; done taking steps
+					;     ((zp n) nil)
+					;     ;; symbol appears in the program
+					;     (())
+					;     ;; symbol we don't recognize: must be a halt!
+					;     (t tape)
+
 
 
 
