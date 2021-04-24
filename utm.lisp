@@ -311,8 +311,3 @@
       (natp m)
       (haltedp (utmi st tape *utm-2-18* n)))
     (haltedp (utmi st tape *utm-2-18* (+ m n)))))
-
-
-
-
-
