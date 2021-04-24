@@ -77,8 +77,7 @@
     (nil sliver     (myr white 2 2)        nil)))
 
 
-;; creature cards (or tokens) are of a type, have a color,
-;; and have power and toughness
+;; a creature has a type, color, power, and toughness
 (defun creaturep (x)
   (and (= (length x) 4)
        (ctypep (first x))
@@ -120,6 +119,8 @@
 		      (find-rotlung st typ (rest tm))))))
 
 ;; finds the head creature, of power and toughness 2/2
+;; otherwise, gives a "blank symbol" (cephalid) if we reach the end of
+;; the tape, since we need an infinite tape
 (defun find-head (tape)
   (cond ((endp tape) '(cephalid white 2 2))
         ((consp tape) (if (and (= 2 (third (first tape)))
@@ -128,8 +129,8 @@
                         (find-head (rest tape))))))
 
 ;; simple remove
-(defun infest (head tape)
-  (remove-equal head tape))
+(defun infest (tape)
+  (remove-equal (find-head tape) tape))
 
 ;; cast beam on creatures
 (defun vigor-beam (tape color)
@@ -139,7 +140,7 @@
                                       (second (first tape))
                                       (+ 2 (third (first tape)))
                                       (+ 2 (fourth (first tape))))
-                                (vigor-beam (rest tape) color))
+                                 (vigor-beam (rest tape) color))
 			(cons (first tape) (vigor-beam (rest tape) color))))))
 
 ;; cast snuffers, dealing -1 -1 to all
@@ -155,9 +156,9 @@
 (defun move (tape color)
   (snuffers (vigor-beam tape color)))
 
-(defun new-tape (new-head head tape)
+(defun new-tape (new-head tape)
   (let* ((color (second new-head))
-         (headless (infest head tape)))
+         (headless (infest tape)))
     (case color
 	  ('white (move (cons new-head headless) color))
 	  ('green (move (cons new-head headless) color))
@@ -171,9 +172,9 @@
      ;; done taking steps (doesn't halt in n steps)
      ((zp n) nil)
      ;; produce a new tape with the given production function
-     (rlg (mtgi (fourth rlg) (new-tape (third rlg) head tape) tm (- n 1)))
+     (rlg (mtgi (fourth rlg) (new-tape (third rlg) tape) tm (- n 1)))
      ;; halted in n steps (no prod. function available, must be halt symbol)
-     (t tape))))
+     ((not rlg) tape))))
 
 (defconst *name-map* 
   '((aetherborn a)
@@ -409,7 +410,7 @@
 
 ;; don't have acl2 worry about all the typing nonsense...
 (defthm isort-is-perm
-  (perm (isort-creatures creatures) creatures)
+   (perm (isort-creatures creatures) creatures)
   :hints
   (("Goal"
     :induct (isort-creatures creatures))))
@@ -432,21 +433,26 @@
    ((endp creatures) t)
    ((endp (rest creatures)) t)
    (t (and
-       (or (equal (third (first creatures)) (third (second creatures)))
-	   (equal (+ 1 (third (first creatures))) (third (second creatures))))
+       (equal (+ 1 (third (first creatures))) (third (second creatures)))
        (sequential (rest creatures))))))
 
 ;; a useful function to ensure we have properly ordered tapes
 ;; this works on all creatures of a given color (ie, green creatures
 ;; and white creatures, corresponding to the **unordered** half-tapes)
-(defun well-formed-battlefield (creatures)
+(defun well-formed (creatures)
   (and
    (consp creatures)
    (creaturesp creatures)
-   (find-head (right-tape creatures))
-   (not (find-head (left-tape creatures)))
+   (find-head creatures)
    (sequential (isort-creatures (right-tape creatures)))
    (sequential (isort-creatures (left-tape creatures)))))
+
+;; confirms that the head always exists in the right side
+;; of a well formed tape
+(defthm head-in-right-tape
+  (implies
+   (well-formed creatures)
+   (find-head (right-tape creatures))))
 
 ;; determines if this tape is halted
 (defun mtg-haltedp (creatures)
@@ -454,23 +460,30 @@
    ((endp creatures) nil)
    ((consp creatures) (equal (first (find-head creatures)) 'assassin))))
 
-;; confirms that the head always exists for a well-formed tape
-(defthm head-exists-and-is-two-two
-  (implies
-   (well-formed-battlefield creatures)
-   (= (third (find-head creatures)) 2)))
-
 ;; tape is only halted if the head is assassin
 (defthm halted-iff-head-assassin
   (implies
-   (well-formed-battlefield creatures)
+   (well-formed creatures)
    (iff (equal (first (find-head creatures)) 'assassin)
 	(mtg-haltedp creatures))))
 
+;; rlg is nil iff creature is assassin
 (defthm assassin-lookup-is-nil
   (implies
-   (booleanp st)
-   (equal (find-rotlung *rogozhin-rotlungs* 'assassin st) nil)))
+   (and
+    (booleanp st)
+    (ctypep typ))
+   (iff (not (find-rotlung st typ *rogozhin-rotlungs*))
+	(equal typ 'assassin))))
+
+;; rlg isn't nil iff creature isn't assassin
+(defthm other-lookups-have-rotlung
+  (implies
+   (and
+    (booleanp st)
+    (ctypep typ))
+   (iff (find-rotlung st typ *rogozhin-rotlungs*)
+	(not (equal typ 'assassin)))))
 
 ;; mtgi will halt on assassin (note: improve this to __only__ halt)
 (defthm mtgi-halts-on-assassin
@@ -478,10 +491,25 @@
    (and
     (booleanp st)
     (creaturesp creatures)
-    (equal (first (find-head creatures)) 'assassin)
     (natp n)
-    (> n 0))
+    (> n 0)
+    (equal (first (find-head creatures)) 'assassin))
    (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n))))
+
+;; this should be possible bidirectionally, and it would give us a stronger
+;; result. using an iff, the only issue is getting it the other way.
+;; theoretically, this works, since we have rlg is nil <=> typ is 'assassin
+;; (defthm mtgi-halts-on-assassin
+;;   (implies
+;;    (and
+;;     (booleanp st)
+;;     (creaturesp creatures)
+;;     (natp n)
+;;     (> n 0)
+;;     (equal (first (find-head creatures)) 'assassin))
+;;    (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n))))
+
+
 
 ;; using the above theorem, we can show that mtgi stays halted
 ;; (note: update to show this is equivalent to running for (+ n m)
@@ -514,26 +542,85 @@
 ;; show: only 1 head, so snuffers/vigor-beam will produce a new head
 ;; and keep all creatures > 1 hp, by our invariants
 ;; infest will remove the head beforehand
-
-;; this is the lemma we want to build up to
-(defthm new-tape-is-well-formed
+(defthm remove-is-creaturesp
   (implies
    (and
-    (well-formed-battlefield creatures)
+    (creaturesp creatures)
+    (memberp c creatures))
+   (creaturesp (remove-equal c creatures))))
+
+;; up to here submits -- proving this will likely
+;; cascade down to all other proofs.
+;; alternatively, we could try using acl2s contracts for a first go
+(defthm find-head-is-memberp
+  (implies
+    (well-formed creatures)
+   (memberp (find-head creatures) creatures)))
+
+;; needs proof
+(defthm infest-is-creaturesp
+  (implies
+   (creaturesp creatures)
+   (creaturesp (infest creatures)))
+  :hints
+  (("Goal"
+    :expand (infest creatures)
+    :use (:instance remove-is-creaturesp
+		    (creatures creatures)
+		    (c (find-head creatures)))
+    :do-not-induct t)))
+
+;; needs proof
+(defthm head-change-is-creaturesp
+  (implies
+   (and
+    (creaturesp creatures)
     (creaturep new-head)
     (equal (third new-head) 2))
-   (well-formed-battlefield (new-tape new-head (find-head creatures) creatures))))
+   (creaturesp (cons new-head (infest creatures)))))
+
+;; this passes
+(defthm head-change-sets-new-head
+  (implies
+   (and
+    (creaturesp creatures)
+    (creaturep new-head)
+    (equal (third new-head) 2))
+   (equal (find-head (cons new-head (infest creatures))) new-head)))
+
+;; needs to satisfy creaturep, find-head, sequential
+;; find-head will *always* be satisfied rn, because of the
+;; blank tape: delegate to another function?
+(defthm head-change-well-formed
+  (implies
+   (and
+    (well-formed creatures)
+    (creaturep new-head)
+    (equal (third new-head) 2))
+   (well-formed (cons new-head (infest creatures)))))
+
+;; after this, we just want to show that vigor-beam + snuffers is also wellformed,
+;; then new-tape + mtgi should easily follow.
+
+;; this is the lemma we want to build up to
+;; (defthm new-tape-is-well-formed
+;;   (implies
+;;    (and
+;;     (well-formed creatures)
+;;     (creaturep new-head)
+;;     (equal (third new-head) 2))
+;;    (well-formed (new-tape new-head (find-head creatures) creatures))))
 
 ;; will need additional lemmas, most likely
 ;; (defthm mtgi-is-well-formed
 ;;   (implies
 ;;    (and
 ;;     (booleanp st)
-;;     (well-formed-battlefield creatures)
+;;     (well-formed creatures)
 ;;     (natp n)
 ;;     (> n 0)
 ;;     (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n)))
-;;    (well-formed-battlefield (mtgi st creatures *rogozhin-rotlungs* n))))
+;;    (well-formed (mtgi st creatures *rogozhin-rotlungs* n))))
 
 ;; prove that mtgi-ord produces the same output as ordering after the fact
 ;; something like
@@ -590,9 +677,3 @@
 ;;     (())
 ;;     ;; symbol we don't recognize: must be a halt!
 ;;     (t tape)
-
-
-
-
-
-
