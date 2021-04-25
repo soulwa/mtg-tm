@@ -119,18 +119,24 @@
 		      (find-rotlung st typ (rest tm))))))
 
 ;; finds the head creature, of power and toughness 2/2
-;; otherwise, gives a "blank symbol" (cephalid) if we reach the end of
-;; the tape, since we need an infinite tape
+;; otherwise, nil
 (defun find-head (tape)
-  (cond ((endp tape) '(cephalid white 2 2))
+  (cond ((endp tape) nil)
         ((consp tape) (if (and (= 2 (third (first tape)))
                                (= 2 (fourth (first tape))))
 			  (first tape)
                         (find-head (rest tape))))))
 
+;; if the tape is blank, produces the blank symbol as the new head (turing machine behavior)
+;; otherwise, finds the head of the tape (can be nil)
+(defun head (tape)
+  (cond
+   ((endp tape) '(cephalid white 2 2))
+   ((consp tape) (find-head tape))))
+
 ;; simple remove
 (defun infest (tape)
-  (remove-equal (find-head tape) tape))
+  (remove-equal (head tape) tape))
 
 ;; cast beam on creatures
 (defun vigor-beam (tape color)
@@ -166,7 +172,7 @@
 
 (defun mtgi (st tape tm n)
   (declare (xargs :measure (nfix n)))
-  (let* ((head (find-head tape))
+  (let* ((head (head tape))
          (rlg  (find-rotlung st (first head) tm)))
     (cond 
      ;; done taking steps (doesn't halt in n steps)
@@ -246,22 +252,23 @@
 (defun left-tape (creatures)
   (cond
    ((endp creatures) nil)
-   ((consp creatures)
-    (if (not (equal 'white (second (first creatures))))
-	(cons (first creatures) (left-tape (rest creatures)))
-      (left-tape (rest creatures))))))
+   ((and (not (equal (second (first creatures)) 'white))
+	 (not (equal (third (first creatures)) 2)))
+    (cons (first creatures) (left-tape (rest creatures))))
+   (t (left-tape (rest creatures)))))
 
 ;; this gets us the right side of the half tape
 ;; we include the head, regardless of color
 (defun right-tape (creatures)
   (cond
    ((endp creatures) nil)
-   ((consp creatures)
-    (if (or
-	 (equal 'white (second (first creatures)))
-	 (equal 2 (third (first creatures))))
-	(cons (first creatures) (right-tape (rest creatures)))
-      (right-tape (rest creatures))))))
+   ((or	(equal (second (first creatures)) 'white)
+	(equal (third (first creatures)) 2))
+    (cons (first creatures) (right-tape (rest creatures))))
+   (t (right-tape (rest creatures)))))
+
+;; this might prove helpful.. not sure
+;; (defcong perm perm (right-tape creatures) 1)
 
 ;; we are now equipped to transform an arbitrary battlefield of creatures
 ;; into the structure of an mtg tape, preserving the ordering information for now
@@ -377,13 +384,7 @@
    (creaturesp creatures)
    (ordered-creatures (isort-creatures creatures))))
 
-;; based on the acl2 insertion sort tutorial, we also need to prove that
-;; insertion sort produces a permutation of the input, as it might 
-;; always return nil (and still be ordered!)
-;; to do so, we need to set up an inductive proof, since it's not quite
-;; as trivial to admit for creatures as it is for integers. (why?)
-
-(defthm insert-is-member
+(defthm insert-is-memberp
   (implies 
    (and
     (creaturep c)
@@ -404,11 +405,12 @@
    (memberp (first creatures) (isort-creatures creatures)))
   :hints 
   (("Goal" :use 
-    ((:instance insert-is-member (c (first creatures))
+    ((:instance insert-is-memberp
+		(c (first creatures))
 		(creatures (isort-creatures (rest creatures)))))
     :expand (isort-creatures creatures))))
 
-;; don't have acl2 worry about all the typing nonsense...
+;; don't have acl2 worry about all the typing...
 (defthm isort-is-perm
    (perm (isort-creatures creatures) creatures)
   :hints
@@ -436,6 +438,8 @@
        (equal (+ 1 (third (first creatures))) (third (second creatures)))
        (sequential (rest creatures))))))
 
+(defcong equal equal (sequential creatures) 1)
+
 ;; a useful function to ensure we have properly ordered tapes
 ;; this works on all creatures of a given color (ie, green creatures
 ;; and white creatures, corresponding to the **unordered** half-tapes)
@@ -447,24 +451,67 @@
    (sequential (isort-creatures (right-tape creatures)))
    (sequential (isort-creatures (left-tape creatures)))))
 
+(defthm right-tape-elems
+  (implies
+   (and
+    (creaturesp creatures)
+    (memberp c (right-tape creatures)))
+   (or (equal (second c) 'white)
+       (equal (third c) 2))))
+
+(defthm left-tape-elems
+  (implies
+   (and
+    (creaturesp creatures)
+    (memberp c (left-tape creatures)))
+   (and (not (equal (second c) 'white))
+	(not (equal (third c) 2)))))
+
+;; this is close to passing, just need the right hints
+;; (defthm left-right-disjoint
+;;   (implies
+;;    (and
+;;     (creaturesp creatures)
+;;     (memberp c1 (right-tape creatures))
+;;     (memberp c2 (left-tape creatures)))
+;;    (and
+;;     (not (memberp c2 (right-tape creatures)))
+;;     (not (memberp c1 (left-tape creatures)))))
+;;   :hints
+;;   (("Goal" :use
+;;     ((:instance right-tape-elems (creatures creatures))
+;;      (:instance left-tape-elems (creatures creatures))))))
+
+;; this and the below lemma don't pass yet, but should soon, just
+;; need to show that reverse is true of membership
+(defthm right-tape-includes-all-two-two
+  (implies
+   (and
+    (well-formed creatures)
+    (memberp c creatures)
+    (equal (third c) 2))
+   (memberp c (right-tape creatures)))
+  :hints
+  (("Goal" :expand (right-tape creatures))))
+
 ;; confirms that the head always exists in the right side
 ;; of a well formed tape
 (defthm head-in-right-tape
   (implies
    (well-formed creatures)
-   (find-head (right-tape creatures))))
+   (memberp (find-head creatures) (right-tape creatures))))
 
 ;; determines if this tape is halted
 (defun mtg-haltedp (creatures)
   (cond
    ((endp creatures) nil)
-   ((consp creatures) (equal (first (find-head creatures)) 'assassin))))
+   ((consp creatures) (equal (first (head creatures)) 'assassin))))
 
 ;; tape is only halted if the head is assassin
 (defthm halted-iff-head-assassin
   (implies
    (well-formed creatures)
-   (iff (equal (first (find-head creatures)) 'assassin)
+   (iff (equal (first (head creatures)) 'assassin)
 	(mtg-haltedp creatures))))
 
 ;; rlg is nil iff creature is assassin
@@ -493,23 +540,22 @@
     (creaturesp creatures)
     (natp n)
     (> n 0)
-    (equal (first (find-head creatures)) 'assassin))
+    (equal (first (head creatures)) 'assassin))
    (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n))))
 
 ;; this should be possible bidirectionally, and it would give us a stronger
 ;; result. using an iff, the only issue is getting it the other way.
 ;; theoretically, this works, since we have rlg is nil <=> typ is 'assassin
-;; (defthm mtgi-halts-on-assassin
+;; (defthm mtgi-halts-iff-assassin
 ;;   (implies
 ;;    (and
 ;;     (booleanp st)
 ;;     (creaturesp creatures)
 ;;     (natp n)
-;;     (> n 0)
-;;     (equal (first (find-head creatures)) 'assassin))
-;;    (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n))))
-
-
+;;     (> n 0))
+;;     (iff
+;;      (equal (first (head creatures)) 'assassin)
+;;      (mtg-haltedp (mtgi st creatures *rogozhin-rotlungs* n)))))
 
 ;; using the above theorem, we can show that mtgi stays halted
 ;; (note: update to show this is equivalent to running for (+ n m)
@@ -539,38 +585,28 @@
 ;; then, we can show that when mtgi terminates, it does so
 ;; with a well-formed tape (ie, it can be mapped)
 
-;; show: only 1 head, so snuffers/vigor-beam will produce a new head
-;; and keep all creatures > 1 hp, by our invariants
-;; infest will remove the head beforehand
 (defthm remove-is-creaturesp
   (implies
-   (and
-    (creaturesp creatures)
-    (memberp c creatures))
+   (creaturesp creatures)
    (creaturesp (remove-equal c creatures))))
 
-;; up to here submits -- proving this will likely
-;; cascade down to all other proofs.
-;; alternatively, we could try using acl2s contracts for a first go
-(defthm find-head-is-memberp
-  (implies
-    (well-formed creatures)
-   (memberp (find-head creatures) creatures)))
-
-;; needs proof
 (defthm infest-is-creaturesp
   (implies
    (creaturesp creatures)
    (creaturesp (infest creatures)))
   :hints
   (("Goal"
-    :expand (infest creatures)
+    :expand (infest creatures))
+   ("Subgoal *1/2.2'"
+    :use (:instance remove-is-creaturesp
+		    (creatures (cdr creatures))
+		    (c (car creatures))))
+   ("Subgoal 2"
+    :cases ((endp (find-head creatures)) (creaturep (find-head creatures)))
     :use (:instance remove-is-creaturesp
 		    (creatures creatures)
-		    (c (find-head creatures)))
-    :do-not-induct t)))
+		    (c (find-head creatures))))))
 
-;; needs proof
 (defthm head-change-is-creaturesp
   (implies
    (and
@@ -579,7 +615,6 @@
     (equal (third new-head) 2))
    (creaturesp (cons new-head (infest creatures)))))
 
-;; this passes
 (defthm head-change-sets-new-head
   (implies
    (and
@@ -588,9 +623,17 @@
     (equal (third new-head) 2))
    (equal (find-head (cons new-head (infest creatures))) new-head)))
 
-;; needs to satisfy creaturep, find-head, sequential
-;; find-head will *always* be satisfied rn, because of the
-;; blank tape: delegate to another function?
+;; up to here passes, need to prove below lemma
+(defthm head-change-preserves-left-tape
+  (implies
+   (and
+    (creaturesp creatures)
+    (creaturep new-head)
+    (equal (third new-head) 2))
+   (equal (left-tape (cons new-head (infest creatures)))
+	  (left-tape creatures))))
+
+;; needs to satisfy creaturep, head, sequential
 (defthm head-change-well-formed
   (implies
    (and
@@ -598,6 +641,11 @@
     (creaturep new-head)
     (equal (third new-head) 2))
    (well-formed (cons new-head (infest creatures)))))
+
+(defthm move-is-well-formed
+  (implies
+   (well-formed creatures)
+   (well-formed (move creatures (second (find-head creatures))))))
 
 ;; after this, we just want to show that vigor-beam + snuffers is also wellformed,
 ;; then new-tape + mtgi should easily follow.
@@ -609,7 +657,7 @@
 ;;     (well-formed creatures)
 ;;     (creaturep new-head)
 ;;     (equal (third new-head) 2))
-;;    (well-formed (new-tape new-head (find-head creatures) creatures))))
+;;    (well-formed (new-tape new-head (head creatures) creatures))))
 
 ;; will need additional lemmas, most likely
 ;; (defthm mtgi-is-well-formed
