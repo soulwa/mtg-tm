@@ -246,8 +246,7 @@
      ;; halted in n steps (no prod. function available, must be halt symbol)
      ((not rlg) tape))))
      
-(ACL2s::check= (mtgi t *example-mtg-tape* *mtg-tm-2-18* 0) nil)
-(ACL2s::check= (not (mtgi t *example-mtg-tape* *mtg-tm-2-18* 6003)) t)
+
 
 ;; equivalent to the example-tape in utm.lisp
 (defconst *example-mtg-tape*
@@ -322,7 +321,8 @@
       (aetherborn white 16 16)
       (myr white 17 17) ))
       
-      
+(ACL2s::check= (mtgi t *example-mtg-tape* *mtg-tm-2-18* 0) nil)
+(ACL2s::check= (creaturesp (mtgi t *example-mtg-tape* *mtg-tm-2-18* 6003)) t)     
 
 ;; order this mtg tape 
 ;; first, we need to define insert: by modelling
@@ -352,7 +352,7 @@
    ((le-creature creature (first l)) (cons creature l))
    (t (cons (first l) (insert-creature creature (rest l))))))
    
-(ACL2s::check= (insert-creature '(leviathan green 2 2) '()) '(leviathan green 2 2))
+(ACL2s::check= (insert-creature '(leviathan green 2 2) '()) '((leviathan green 2 2)))
 (ACL2s::check= (insert-creature '(leviathan green 2 2) '( (kavu green 3 3) (kavu green 4 4)))
                '( (leviathan green 2 2) (kavu green 3 3) (kavu green 4 4)))
 
@@ -366,7 +366,7 @@
 		     
 		     
 (ACL2s::check= (isort-creatures '( (leviathan green 4 4) (assassin blue 3 3) (kavu green 2 2)))
-               '( (kavu green 2 2) (assassin blue) (leviathan green 4 4)))
+               '( (kavu green 2 2) (assassin blue 3 3) (leviathan green 4 4)))
 (ACL2s::check= (isort-creatures '( (leviathan green 2 2) (leviathan green 4 4) (leviathan green 3 3)))
                '( (leviathan green 2 2) (leviathan green 3 3) (leviathan green 4 4)))
 
@@ -388,7 +388,6 @@
                '( (leviathan green 4 4)))
 
 ;; this gets us the right side of the half tape, or all white creatures
-;; TODO: must exclude the head
 (defun right-tape (creatures)
   (cond
    ((endp creatures) nil)
@@ -399,7 +398,7 @@
    (t (right-tape (rest creatures)))))
    
 (ACL2s::check= (right-tape '( (leviathan green 4 4) (kavu white 2 2)))
-               '( (kavu white 2 2)))
+               '())
 
 ;; we define some additional functions, allowing us to test the output of mtgi
 ;; in a much nicer format
@@ -428,8 +427,8 @@
 (defun map-creature-name (creature)
   (second (assoc (first creature) *name-map*)))
   
-(ACL2s::check= (map-creature-name 'juggnernaut) j)
-(ACL2s::check= (map-creature-name 'apple) nil)
+(ACL2s::check= (map-creature-name '(juggernaut green 2 2)) 'j)
+(ACL2s::check= (map-creature-name '(apple white 2 2)) nil)
 
 ;; transform the creatures to appear as symbols representing their names,
 ;; given that they are already ordered.
