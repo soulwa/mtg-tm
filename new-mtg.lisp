@@ -2,8 +2,6 @@
 ;; https://arxiv.org/abs/1904.09828 
 (include-book "kestrel/lists-light/perm" :dir :system)
 (include-book "kestrel/lists-light/memberp" :dir :system)
-(include-book "acl2s/ccg/ccg" :ttags ((:ccg)) :dir :system :load-compiled-file nil)
-(ld "acl2s/ccg/ccg-settings.lsp" :dir :system)
 (include-book "acl2s/check-equal" :dir :system)
 
 ;; MTGTM creature types.
