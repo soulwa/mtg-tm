@@ -1,4 +1,6 @@
-;; an implementation of a tag system
+;; an implementation of a UTM(2,18) tag system
+;; experimentation- not part of utmi
+(include-book "acl2s/check-equal" :dir :system)
 
 ;; some possible tags
 (defconst *alphabet*
@@ -155,23 +157,38 @@
 (defun utm-symbolp (x)
   (member x *rogozhin-alphabet*))
 
+(ACL2s::check= (not (utm-symbolp 'c2)) nil)
+(ACL2s::check= (utm-symbolp 'z) nil)
+
 ;; represents a direction to move the tape
 (defun utm-dirp (x)
   (or (equal x 'L) (equal x 'R) (equal x nil)))
+
+(ACL2s::check= (utm-dirp 'L) t)
+(ACL2s::check= (utm-dirp 'R) t)
+(ACL2s::check= (utm-dirp 'up) nil)
 
 ;; represents a state in the UTM(2, 18)
 (defun utm-statep (x)
   (or (member x *rogozhin-states*) (equal x nil)))
 
+(ACL2s::check= (not (utm-statep 'q1)) nil)
+(ACL2s::check= (not (utm-statep 'q2)) nil)
+(ACL2s::check= (utm-statep 'q) nil)
+
 ;; represents an instruction
 (defun utm-instrp (x)
   (and
     (true-listp x)
-    (= (length x) 4)
-    (utm-symbolp (first x))
-    (or (utm-symbolp (second x)) (equal x 'HALT))
-    (utm-dirp (third x))
-    (utm-statep (fourth x))))
+    (= (length x) 5)
+    (utm-statep (first x))
+    (utm-symbolp (second x))
+    (or (utm-symbolp (third x)) (equal x 'HALT))
+    (utm-dirp (fourth x))
+    (utm-statep (fifth x))))
+
+(ACL2s::check= (not (utm-instrp (car *utm-2-18*))) nil)
+(ACL2s::check= (utm-instrp '(q1 q2 q3 q4)) nil)
 
 ;; represents a list of instructions, or: a machine
 ;; might not be turing complete (no guarantees are made
@@ -183,9 +200,14 @@
     ((consp x) (and (utm-instrp (first x))
                     (utm-loinstrp (rest x))))))
 
+(ACL2s::check= (utm-loinstrp (cons '(q1 q2 q3 q4) *utm-2-18*)) nil)
+
 ;; gets the head of the tape, or a new blank symbol
 (defun sym (x)
   (if (consp x) (first x) '1<))
+
+(ACL2s::check= (sym '(1 c)) '1)
+(ACL2s::check= (sym '()) '1<)
 
 ;; get the next instruction for a utm, given a symbol, state, and a program
 (defun instr (sym st tm)
@@ -196,6 +218,8 @@
       (equal sym (second (first tm))))
      (first tm))
     (t (instr sym st (rest tm)))))
+    
+(ACL2s::check= (instr 'c 'q1 *utm-2-18*) '(q1 c 1> L q2))
 
 ;; definition of tape based on tmi-reductions.lisp
 
@@ -205,6 +229,9 @@
     ((endp x) t)
     ((consp x) (and (utm-symbolp (first x))
                     (half-tapep (rest x))))))
+                    
+(ACL2s::check= (not (half-tapep '(c c c))) nil)
+(ACL2s::check= (half-tapep '(1 2 3)) nil)
 
 ;; represents a full tape: 
 ;; '(,first-half ,second-half)
@@ -214,6 +241,8 @@
   (and (consp x)
     (half-tapep (first x))
     (half-tapep (rest x))))
+    
+(ACL2s::check= (not (tapep '((c c c) (c c c)))) nil)
 
 ;; rev1 based on tmi-reductions.lisp
 ;; this function adds each element of x to a in reverse order
@@ -231,6 +260,10 @@
          (rev1 (car tape)
                   (cons '[ (cons (sym (cdr tape)) (cons '] (cdr (cdr tape)))))))
         (t nil)))
+        
+(ACL2s::check= (show-tape '( (c2 1 b) (b3 b2 c)))
+               '(b 1 c2 [ b3 ] b2 c))
+                    
 
 ;; gets the head of the tape
 (defun tape-head (tape) 
