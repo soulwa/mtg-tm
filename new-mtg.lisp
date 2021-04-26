@@ -280,8 +280,9 @@
 (defun left-tape (creatures)
   (cond
    ((endp creatures) nil)
-   ((and (not (equal (second (first creatures)) 'white))
-	 (not (equal (third (first creatures)) 2)))
+   ((and
+     (equal (second (first creatures)) 'green)
+     (not (equal (third (first creatures)) 2)))
     (cons (first creatures) (left-tape (rest creatures))))
    (t (left-tape (rest creatures)))))
 
@@ -290,8 +291,9 @@
 (defun right-tape (creatures)
   (cond
    ((endp creatures) nil)
-   ((or	(equal (second (first creatures)) 'white)
-	(equal (third (first creatures)) 2))
+   ((and
+     (equal (second (first creatures)) 'white)
+     (not (equal (third (first creatures)) 2)))
     (cons (first creatures) (right-tape (rest creatures))))
    (t (right-tape (rest creatures)))))
 
@@ -397,10 +399,7 @@
   (("Goal"
     :use ((:instance isort-is-perm (creatures creatures))))))
 
-;; determines if the creatures are arranged in progressive order: that is, every creature is either
-;; - the head, or
-;; - offset by 1 from the head, or
-;; - has a card of 1 less toughness and matching power before it
+;; determines if the creatures are arranged in progressive order by toughness
 (defun sequential (creatures)
   (cond
    ((endp creatures) t)
@@ -411,34 +410,62 @@
 
 (defcong equal equal (sequential creatures) 1)
 
+(defun min-creature-pow-acc (creatures acc)
+  (cond
+   ((endp creatures) acc)
+   ((consp creatures) (min-creature-pow-acc
+		       (rest creatures)
+		       (min acc (third (first creatures)))))))
+
+(defun min-creature-pow (creatures)
+  (min-creature-pow-acc creatures 100000)) 
+
 ;; a useful function to ensure we have properly ordered tapes
 ;; this works on all creatures of a given color (ie, green creatures
 ;; and white creatures, corresponding to the **unordered** half-tapes)
+;; we don't actually care whether we're at a head or not... if we aren't,
+;; either the left or right should be empty though
 (defun well-formed (creatures)
   (and
    (creaturesp creatures)
-   ;; (find-head creatures)
    (sequential (isort-creatures (right-tape creatures)))
-   (sequential (isort-creatures (left-tape creatures)))))
+   (sequential (isort-creatures (left-tape creatures)))
+   ;; (xor (endp (left-tape creatures)) (equal (min-creature-pow (left-tape creatures)) 3))
+   ;; (xor (endp (right-tape creatures)) (equal (min-creature-pow (right-tape creatures)) 3))
+   ;; (xor (find-head creatures)
+   ;; 	(xor (endp left-tape creatures)
+   ;; 	     (endp right-tape creatures)))
+   ))
+    
+(defcong equal equal (well-formed creatures) 1)
 
 (defthm empty-tape-is-well-formed
   (well-formed nil))
+
+(defthm head-is-memberp
+  (implies
+   (and
+    (creaturesp creatures)
+    (find-head creatures))
+   (memberp (find-head creatures) creatures)))
   
 (defthm right-tape-elems
   (implies
    (and
     (creaturesp creatures)
     (memberp c (right-tape creatures)))
-   (or (equal (second c) 'white)
-       (equal (third c) 2))))
+   (and
+    (equal (second c) 'white)
+    (not (equal (third c) 2)))))
 
 (defthm left-tape-elems
   (implies
    (and
     (creaturesp creatures)
     (memberp c (left-tape creatures)))
-   (and (not (equal (second c) 'white))
-	(not (equal (third c) 2)))))
+   (and
+    (equal (second c) 'green)
+    (not (equal (third c) 2)))))
 
 (defthm left-not-in-right
   (implies
@@ -464,24 +491,46 @@
     (not (memberp c2 (right-tape creatures)))
     (not (memberp c1 (left-tape creatures))))))
 
-(defthm left-right-partitions
+;; no 2/2 creatures are in either tape (shouldn't this include the head?!)
+(defthm no-two-two
   (implies
    (and
     (creaturesp creatures)
-    (memberp c creatures))
-   (xor
-    (memberp c (right-tape creatures))
-    (memberp c (left-tape creatures)))))
+    (memberp c creatures)
+    (equal (third c) 2))
+   (and
+    (not (memberp c (right-tape creatures)))
+    (not (memberp c (left-tape creatures))))))
 
-;; confirms that the head always exists in the right side
-;; of a well formed tape
-(defthm head-in-right-tape
+;; TODO
+(skip-proofs
+ (defthm head-not-in-left-right
+   (implies
+    (creaturesp creatures)
+    (and
+     (not (memberp (head creatures) (right-tape creatures)))
+     (not (memberp (head creatures) (left-tape creatures)))))
+   :hints
+   (("Goal"
+     :use (:instance no-two-two (creatures creatures) (c (head creatures)))))))
+
+(defthm removal-keeps-the-same
+  (implies
+   (not (memberp c (left-tape creatures)))
+   (equal
+    (left-tape (remove-equal c creatures))
+    (left-tape creatures))))
+
+(defthm cons-keeps-the-same
   (implies
    (and
     (creaturesp creatures)
-    (find-head creatures))
-   (memberp (find-head creatures) (right-tape creatures))))
-
+    (creaturep c)
+    (equal (third c) 2))
+   (equal
+    (left-tape (cons c creatures))
+    (left-tape creatures))))
+   
 ;; determines if this tape is halted
 (defun mtg-haltedp (creatures)
   (cond
@@ -513,7 +562,7 @@
    (iff (find-rotlung st typ *mtg-tm-2-18*)
 	(not (equal typ 'assassin)))))
 
-;; mtgi will halt on assassin (note: improve this to __only__ halt)
+;; mtgi will halt on assassin 
 (defthm mtgi-halts-on-assassin
   (implies
    (and
@@ -523,20 +572,6 @@
     (> n 0)
     (equal (first (head creatures)) 'assassin))
    (mtg-haltedp (mtgi st creatures *mtg-tm-2-18* n))))
-
-;; this should be possible bidirectionally, and it would give us a stronger
-;; result. using an iff, the only issue is getting it the other way.
-;; theoretically, this works, since we have rlg is nil <=> typ is 'assassin
-;; (defthm mtgi-halts-iff-assassin
-;;   (implies
-;;    (and
-;;     (booleanp st)
-;;     (creaturesp creatures)
-;;     (natp n)
-;;     (> n 0))
-;;     (iff
-;;      (equal (first (head creatures)) 'assassin)
-;;      (mtg-haltedp (mtgi st creatures *mtg-tm-2-18* n)))))
 
 ;; using the above theorem, we can show that mtgi stays halted
 ;; (note: update to show this is equivalent to running for (+ n m)
@@ -565,6 +600,50 @@
 ;; maintains these properties
 ;; then, we can show that when mtgi terminates, it does so
 ;; with a well-formed tape (ie, it can be mapped)
+
+;; (skip-proofs
+;;  (defthm new-tape-is-well-formed
+;;    (implies
+;;     (and
+;;      (well-formed creatures)
+;;      (creaturep new-head)
+;;      (equal (third new-head) 2))
+;;     (well-formed (new-tape new-head creatures)))))
+
+(defthm mtgi-base-case-well-formed
+  (implies
+   (and
+    (booleanp st)
+    (well-formed creatures)
+    (equal n 0))
+   (well-formed (mtgi st creatures *mtg-tm-2-18* n))))
+
+(defthm mtgi-other-base-case-well-formed
+  (implies
+   (and
+    (booleanp st)
+    (well-formed creatures)
+    (natp n)
+    (not (find-rotlung st (first (head creatures)) *mtg-tm-2-18*)))
+   (well-formed (mtgi st creatures *mtg-tm-2-18* n))))
+
+;; should pass..
+;; nil is well formed
+;; tape is well formed
+;; recursive case is simply new-tape, which we have shown is well-formed
+;; (defthm mtgi-is-well-formed
+;;   (implies
+;;    (and
+;;     (booleanp st)
+;;     (well-formed creatures)
+;;     (natp n)
+;;     (> n 0)
+;;     (find-rotlung st (first (head creatures)) *mtg-tm-2-18*))
+;;    (well-formed (mtgi st creatures *mtg-tm-2-18* n)))
+;;   :hints
+;;   (("Goal"
+;;     :expand (mtgi st creatures *mtg-tm-2-18* n)
+;;     :induct (mtgi st creatures *mtg-tm-2-18* n))))
 
 (defthm remove-is-creaturesp
   (implies
@@ -604,13 +683,35 @@
     (equal (third new-head) 2))
    (equal (find-head (cons new-head (infest creatures))) new-head)))
 
+;; prove these from the angle of them not containing head to begin with
 (defthm infest-preserves-left-tape
   (implies
    (creaturesp creatures)
    (equal (left-tape (infest creatures))
-	  (left-tape creatures))))
+	  (left-tape creatures)))
+  :hints
+  (("Goal"
+    :expand (infest creatures)
+    :use ((:instance removal-keeps-the-same
+		     (creatures creatures)
+		     (c (head creatures)))
+	  (:instance head-not-in-left-right
+		     (creatures creatures))))))
+(skip-proofs
+(defthm infest-preserves-right-tape
+  (implies
+   (creaturesp creatures)
+   (equal (right-tape (infest creatures))
+	  (right-tape creatures)))
+  :hints
+  (("Goal"
+    :expand (infest creatures)
+    :use ((:instance removal-keeps-the-same
+		     (creatures creatures)
+		     (c (head creatures)))
+	  (:instance head-not-in-left-right
+		     (creatures creatures)))))))
 
-;; up to here passes, need to prove below lemma
 (defthm head-change-preserves-left-tape
   (implies
    (and
@@ -618,44 +719,79 @@
     (creaturep new-head)
     (equal (third new-head) 2))
    (equal (left-tape (cons new-head (infest creatures)))
-	  (left-tape creatures))))
+	  (left-tape creatures)))
+  :hints
+  (("Goal"
+    :use ((:instance cons-keeps-the-same (creatures creatures) (c new-head))
+	  (:instance infest-preserves-left-tape (creatures creatures))))))
 
-;; probably should just show that removing and adding a creature of the same
-;; power/toughness is still sequential
-;; proving sequential is easily the largest hurdle here... any way to rethink this?
-(defthm head-change-right-tape-sequential
+(defthm head-change-preserves-right-tape
   (implies
    (and
     (creaturesp creatures)
     (creaturep new-head)
     (equal (third new-head) 2))
-   (sequential (isort-creatures
-		(right-tape (cons new-head (infest creatures)))))))
+   (equal (right-tape (cons new-head (infest creatures)))
+	  (right-tape creatures)))
+  :hints
+  (("Goal"
+    :use ((:instance cons-keeps-the-same (creatures creatures) (c new-head))
+	  (:instance infest-preserves-right-tape (creatures creatures))))))
 
-;; needs to satisfy creaturep, head, sequential
+;; solid result here
 (defthm head-change-well-formed
   (implies
    (and
     (well-formed creatures)
     (creaturep new-head)
     (equal (third new-head) 2))
-   (well-formed (cons new-head (infest creatures)))))
+   (and
+    (well-formed (cons new-head (infest creatures)))
+    (find-head (cons new-head (infest creatures)))))
+  :hints
+  (("Goal"
+    :use ((:instance head-change-is-creaturesp (creatures creatures) (new-head new-head))
+	  (:instance head-change-preserves-left-tape
+		     (creatures creatures)
+		     (new-head new-head))
+	  (:instance head-change-preserves-right-tape
+		     (creatures creatures)
+		     (new-head new-head))))))
 
 ;; after this, we just want to show that vigor-beam + snuffers is also wellformed,
-;; then new-tape + mtgi should easily follow.
-(defthm move-is-well-formed
-  (implies
-   (well-formed creatures)
-   (well-formed (move creatures (second (find-head creatures))))))
+;; then new-tape + mtgi should "easily" follow.
 
-;; this is the lemma we want to build up to
-;; (defthm new-tape-is-well-formed
+;; this isn't happening, i don't think...
+;; (defthm vigor-beam-stays-sequential
 ;;   (implies
 ;;    (and
 ;;     (well-formed creatures)
-;;     (creaturep new-head)
-;;     (equal (third new-head) 2))
-;;    (well-formed (new-tape new-head (head creatures) creatures))))
+;;     (find-head creatures)
+;;     (sequential (isort-creatures (left-tape creatures))))
+;;    (sequential (isort-creatures
+;; 		(left-tape (vigor-beam creatures (second (find-head creatures))))))))
+
+(skip-proofs
+(defthm move-is-well-formed
+  (implies
+   (and
+    (well-formed creatures)
+    (find-head creatures))
+   (well-formed (move creatures (second (find-head creatures)))))))
+
+;; this is the lemma we want to build up to-- should ensure this works, first
+(defthm new-tape-is-well-formed
+  (implies
+   (and
+    (well-formed creatures)
+    (creaturep new-head)
+    (equal (third new-head) 2))
+   (well-formed (new-tape new-head creatures)))
+  :hints
+  (("Goal"
+    :expand (new-tape new-head creatures)
+    :use ((:instance head-change-well-formed (creatures creatures) (new-head new-head))
+	  (:instance move-is-well-formed (creatures creatures))))))
 
 ;; will need additional lemmas, most likely
 ;; (defthm mtgi-is-well-formed
@@ -667,22 +803,6 @@
 ;;     (> n 0)
 ;;     (mtg-haltedp (mtgi st creatures *mtg-tm-2-18* n)))
 ;;    (well-formed (mtgi st creatures *mtg-tm-2-18* n))))
-
-;; prove that mtgi-ord produces the same output as ordering after the fact
-;; something like
-;; (defthm mtgi-is-mtgi-ord-is-mtgi) or vice versa, we can map between them
-
-;; reduce the output down to just the symbols with a mapper
-;; (defun map-mtg (creatures)
-;;   (cond
-;;     ((endp creatures) nil)
-;;     ((consp creatures)))
-
-;; prove that the symbols are isomorphic to the rogozhin alphabet
-
-;; prove that mtgi-ord's output, once reduced, is equivalent to utmi.
-
-;; then, need to have a function which actually operates on an ordered battlefield. would look a lot like utmi:
 
 (defconst *rogozhin-assoc* 
   '((aetherborn 1)
@@ -713,13 +833,3 @@
    ((endp creatures) nil)
    ((consp creatures) (cons (map-creature (first creatures))
 			    (map-tape (rest creatures))))))
-
-;; (defun mtgi-ord (st tape tm n)
-;;   (declare (xargs :measure (nfix n)))
-;;   (cond
-;;     ;; done taking steps
-;;     ((zp n) nil)
-;;     ;; symbol appears in the program
-;;     (())
-;;     ;; symbol we don't recognize: must be a halt!
-;;     (t tape)
