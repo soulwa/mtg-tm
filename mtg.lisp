@@ -246,7 +246,6 @@
 ;; we then need the different "pieces" of the tape, so we 
 ;; can model the pieces of the half tape
 
-
 ;; this gets us the left side of the half tape
 ;; we exclude the head, regardless of color
 (defun left-tape (creatures)
@@ -266,25 +265,6 @@
 	(equal (third (first creatures)) 2))
     (cons (first creatures) (right-tape (rest creatures))))
    (t (right-tape (rest creatures)))))
-
-;; this might prove helpful.. not sure
-;; (defcong perm perm (right-tape creatures) 1)
-
-;; we are now equipped to transform an arbitrary battlefield of creatures
-;; into the structure of an mtg tape, preserving the ordering information for now
-(defun battlefield-to-tape (creatures)
-  (cons (isort-creatures (left-tape creatures))
-        (isort-creatures (right-tape creatures))))
-
-;; shows that some tape contains a card of a given 
-;; Listof Creature Nat -> Boolean
-(defun contains-toughness-and-color (creatures hp color)
-  (cond
-   ((endp creatures) nil)
-   ((consp creatures) (or (and
-			   (equal hp (third (first creatures)))
-			   (equal color (second (first creatures)))
-                           (contains-toughness-and-color (rest creatures) hp color))))))
 
 ;; we need to prove some lemmas to show that we don't need mtgi anymore
 ;; notably, we will need to show a new function operating on creatures, 
@@ -467,38 +447,46 @@
    (and (not (equal (second c) 'white))
 	(not (equal (third c) 2)))))
 
-;; this is close to passing, just need the right hints
-;; (defthm left-right-disjoint
-;;   (implies
-;;    (and
-;;     (creaturesp creatures)
-;;     (memberp c1 (right-tape creatures))
-;;     (memberp c2 (left-tape creatures)))
-;;    (and
-;;     (not (memberp c2 (right-tape creatures)))
-;;     (not (memberp c1 (left-tape creatures)))))
-;;   :hints
-;;   (("Goal" :use
-;;     ((:instance right-tape-elems (creatures creatures))
-;;      (:instance left-tape-elems (creatures creatures))))))
-
-;; this and the below lemma don't pass yet, but should soon, just
-;; need to show that reverse is true of membership
-(defthm right-tape-includes-all-two-two
+(defthm left-not-in-right
   (implies
    (and
-    (well-formed creatures)
-    (memberp c creatures)
-    (equal (third c) 2))
-   (memberp c (right-tape creatures)))
-  :hints
-  (("Goal" :expand (right-tape creatures))))
+    (creaturesp creatures)
+    (memberp c (right-tape creatures)))
+   (not (memberp c (left-tape creatures)))))
+
+(defthm right-not-in-left
+  (implies
+   (and
+    (creaturesp creatures)
+    (memberp c (left-tape creatures)))
+   (not (memberp c (right-tape creatures)))))
+
+(defthm left-right-disjoint
+  (implies
+   (and
+    (creaturesp creatures)
+    (memberp c1 (right-tape creatures))
+    (memberp c2 (left-tape creatures)))
+   (and
+    (not (memberp c2 (right-tape creatures)))
+    (not (memberp c1 (left-tape creatures))))))
+
+(defthm left-right-partitions
+  (implies
+   (and
+    (creaturesp creatures)
+    (memberp c creatures))
+   (xor
+    (memberp c (right-tape creatures))
+    (memberp c (left-tape creatures)))))
 
 ;; confirms that the head always exists in the right side
 ;; of a well formed tape
 (defthm head-in-right-tape
   (implies
-   (well-formed creatures)
+   (and
+    (creaturesp creatures)
+    (find-head creatures))
    (memberp (find-head creatures) (right-tape creatures))))
 
 ;; determines if this tape is halted
@@ -623,6 +611,12 @@
     (equal (third new-head) 2))
    (equal (find-head (cons new-head (infest creatures))) new-head)))
 
+(defthm infest-preserves-left-tape
+  (implies
+   (creaturesp creatures)
+   (equal (left-tape (infest creatures))
+	  (left-tape creatures))))
+
 ;; up to here passes, need to prove below lemma
 (defthm head-change-preserves-left-tape
   (implies
@@ -633,6 +627,18 @@
    (equal (left-tape (cons new-head (infest creatures)))
 	  (left-tape creatures))))
 
+;; probably should just show that removing and adding a creature of the same
+;; power/toughness is still sequential
+;; proving sequential is easily the largest hurdle here... any way to rethink this?
+(defthm head-change-right-tape-sequential
+  (implies
+   (and
+    (creaturesp creatures)
+    (creaturep new-head)
+    (equal (third new-head) 2))
+   (sequential (isort-creatures
+		(right-tape (cons new-head (infest creatures)))))))
+
 ;; needs to satisfy creaturep, head, sequential
 (defthm head-change-well-formed
   (implies
@@ -642,13 +648,12 @@
     (equal (third new-head) 2))
    (well-formed (cons new-head (infest creatures)))))
 
+;; after this, we just want to show that vigor-beam + snuffers is also wellformed,
+;; then new-tape + mtgi should easily follow.
 (defthm move-is-well-formed
   (implies
    (well-formed creatures)
    (well-formed (move creatures (second (find-head creatures))))))
-
-;; after this, we just want to show that vigor-beam + snuffers is also wellformed,
-;; then new-tape + mtgi should easily follow.
 
 ;; this is the lemma we want to build up to
 ;; (defthm new-tape-is-well-formed
