@@ -11,7 +11,6 @@ We also write various lemmata to build up to our final proof, and ensure the sou
 We use the `lists-light` library, which is part of the ACL2 community books. Specifically, we use the `perm` and `memberp` functions, along with their associated lemmata and equivalence/congruence relations to prove our own lemmata and main theorem.
 
 Finally, our work is inspired by the paper *Magic: The Gathering is Turing Complete* by Churchill et al.[^2] as we model the system laid out in this paper which embeds a UTM(2, 18) in the MTG card game. J Strother Moore's *Proof Pearl: Proving a Simple Von Neumann Machine Turing Complete*[^3] and its accompanying code in the ACL2 community book `models/jvm/m1` served as the starting point and inspiration for the structure of our project, though we have since pivoted in both direction and scope.
-<!-- might mention Rogozhin paper here as well, though we already did kinda mention it -->
 
 [^1]: (J Strother Moore, 2014)
 [^2]: (Churchill et al., 2019)
@@ -37,7 +36,19 @@ We now shift files to MTG, where our first steps mirror those performed with UTM
 
 Now, we delve into lemmas with the objective of separating us from `MTGI`- that is, we wish to prove ultimately that `MTGI` is equivalent to a new machine `mtg-ord`, which operates on the modified tape that we just generated. This `mtg-ord`, in turn, would be connected to `utmi`- and so, by transitivity, `mtgi` would be isomorphic to `utmi`, and `mtgi` would be Turing complete.
 
-With this objective in mind, we wish to assert the well-formedness of our insertion sort. That is, given a battlefield of creatures, the insertion sort operation should always sort that list correctly. As a subgoal, we wish to demonstrate that insertion sort produces a permutation of its input, a result that requires several sub-lemmata. 
+With this objective in mind, we wish to assert the well-formedness of our insertion sort. That is, given a battlefield of creatures, the insertion sort operation should always sort that list correctly. This goal is composed of two main sublemmas- the insertion sort produces an ordered list of creatures, and the insertion sort produces a permutation of its input- these goals in turn require a few sublemmas in order to pass. 
+
+Given that our insertion sort is a well-formed operation, we move on to reasoning about our new half-tape model. Particularly, we wish to reason about the exclusion of our two half-tapes from one another, their exclusion of the head of the tape, and its termination behavior. This requires us to reason about several of our functions and data representations, and our work culminates in `new-tape-is-well-formed`- `new-tape` being the function that uses the Turing machine interpreter's overall state in order to generate the new tape after one step. 
+
+We reason about the left and right halves of the tape, ensuring that they are well-formed- they include only the creatures of the appropriate color, and not the head. Furthermore, they never intersect. We move on to reasoning about halting behavior- halting occurs whenever the assassin creature type is spawned by our production function creatures, a behavior that corresponds to the writing of the HALT symbol to the tape of the UTM. The tape halts only if this is the case, in which our Turing machine runs out of instructions. Furthermore, given a halted tape, stepping that tape by any amount of steps will not modify that tape- it stays halted for good.
+
+Finally, we move into reasoning about `infest` and `move`, the functions that actually drive the computation, and generate the new tape. As `:instances` of previous results, we show that infest does not modify the left or right halves of the tape- only the head. Further, changing the head afterwards does not modify the the and right halves of the tape.
+
+The remaining piece is to reason about the well-formedness of `move`. However, we found this result very challenging, and elected to `skip-proofs` it- to demonstrate it from smaller lemmas would require more invariants to be maintained over the structure of `mtgi`, which we elected to avoid.
+
+
+
+
 
 ## Results
 
