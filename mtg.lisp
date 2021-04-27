@@ -914,6 +914,9 @@
 ;; need for determining halting behavior pointless, but we do not understand at the current time
 ;; how to improve this theorem. additionally, the function is only aware of its nil termination case,
 ;; not the halting case, when proving by induction, which introduced another difficulty when trying to prove it.
+
+;; we have skip-proof'd this theorem, as it doesn't submit, but leave it here as a reminder of the goal
+;; of our project
 (skip-proofs
  (defthm mtgi-is-well-formed
    (implies
