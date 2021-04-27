@@ -4,14 +4,18 @@
 # Introduction
 The aim of our project is to demonstrate that the game Magic: The Gathering (henceforth MTG)is capable of embedding a Universal Turing machine, and is thus both Turing complete in its ruleset and undecidable. Our project specifically proves that operations on a sequence of "creature tokens", cards in the game which encode symbols on a Turing machine, leave the sequence of cards **well-formed**: each time the game advances analogously to the UTM(2, 18), the cards describe a properly constructed input tape for a Turing machine.
 
-Our project was completed in ACL2, and requires a great deal of lemmata to get working. We develop an interpreter for a UTM(2, 18), or a Universal Turing machine with 2 states and 18 symbols, as described in Yurii Rogozhin's *Small universal Turing machines*. We use existing interpreters, such as the one found [here](http://www.nearly42.org/misc/tm/tm.html) and on [Replit](https://repl.it/@Quantumplation/UTM218) to ensure the soundness of our interpreter, since it serves as the source of truth for our project.
+Our project was completed in ACL2, and requires a great deal of lemmata to get working. We develop an interpreter for a UTM(2, 18), or a Universal Turing machine with 2 states and 18 symbols, as described in Yurii Rogozhin's *Small universal Turing machines*.[^1] We use existing interpreters, such as the one found [here](http://www.nearly42.org/misc/tm/tm.html) and on [Replit](https://repl.it/@Quantumplation/UTM218) to ensure the soundness of our interpreter, since it serves as the source of truth for our project.
 
 We also write various lemmata to build up to our final proof, and ensure the soundness of our additional functions. These will be discussed in detail below.
 
 We use the `lists-light` library, which is part of the ACL2 community books. Specifically, we use the `perm` and `memberp` functions, along with their associated lemmata and equivalence/congruence relations to prove our own lemmata and main theorem.
 
-Finally, our work is inspired by the paper *[Magic: The Gathering is Turing Complete](https://arxiv.org/abs/1904.09828)* by Churchill et al. as we model the system laid out in this paper which embeds a UTM(2, 18) in the MTG card game. J Strother Moore's [Proof Peal: Proving a Simple Von Neumann Machine Turing Complete](https://www.cs.utexas.edu/users/moore/publications/turing-completeness.pdf) and its accompanying code in the ACL2 community book `models/jvm/m1` served as the starting point and inspiration for the structure of our project, though we have since pivoted in both direction and scope.
+Finally, our work is inspired by the paper *Magic: The Gathering is Turing Complete* by Churchill et al.[^2] as we model the system laid out in this paper which embeds a UTM(2, 18) in the MTG card game. J Strother Moore's *Proof Pearl: Proving a Simple Von Neumann Machine Turing Complete*[^3] and its accompanying code in the ACL2 community book `models/jvm/m1` served as the starting point and inspiration for the structure of our project, though we have since pivoted in both direction and scope.
 <!-- might mention Rogozhin paper here as well, though we already did kinda mention it -->
+
+[^1]: (J Strother Moore, 2014)
+[^2]: (Churchill et al., 2019)
+[^3]:(Yurii Rogozhin, 1996)
 
 # Background
 
@@ -37,13 +41,25 @@ With this objective in mind, we wish to assert the well-formedness of our insert
 
 ## Results
 
-
-
 ## Personal Progress
 
-Our work with UTM and MTG was certainly enlightening. While we set out with the seemingly straightforward objective of proving the Turing equivalence of UTM and MTGI using theorems A and B, per [Proof Peal: Proving a Simple Von Neumann Machine Turing Complete](https://www.cs.utexas.edu/users/moore/publications/turing-completeness.pdf), we soon discovered that this objective was a bit more than we could pull off. Once we had internalized all of the relevant research, we set about putting it all together. As a trial run, we worked on implementing a tag system in ACL2- the high level computational model to be embedded into a Turing machine. This exercise did not present significant problems. The next step was to implement the UTM itself- that is, the Turing machine in which this tag system was to be embedded. This too was relatively straightforward. Moore's work served as a useful guide   in this exercise, and we adopted several of his design choices that we found useful. We now could begin work on MTG.
+Our work with UTM and MTG was certainly enlightening. While we set out with the seemingly straightforward objective of proving the Turing equivalence of UTM and MTGI using theorems A and B, per  we soon discovered that this objective was a bit more than we could pull off. Once we had internalized all of the relevant research, we set about putting it all together. As a trial run, we worked on implementing a tag system in ACL2- the high level computational model to be embedded into a Turing machine. This exercise did not present significant problems. The next step was to implement the UTM itself- that is, the Turing machine in which this tag system was to be embedded. This too was relatively straightforward. Moore's work[^4] served as a useful guide in this exercise, and we adopted several of his design choices that we found useful. We now could begin work on MTG.
 
-MTG was definitely more difficult than UTM and MTG, as we now had several layers of choices to make- how much of the card game proper should we implement into our Turing machine emulator? It has turn-taking, cloaking states, tapping states, and other details- not to mention that this MTG Turing machine takes a considerable about of in-game setup to pull off, utilizing many modifier cards from across the long run of the game's cards. If our models of MTG were too high-level, we would risk failing to achieve much in the way of reasoning about their Turing completeness in relation to UTM. Many, many reductions would have to take place, and the final result would be a computationally heavy proof indeed. On the other hand, we could use a more reduced representation of MTG. At its most basic level, this MTG TM is, after all, a UTM- and we could implicitly reduce nearly all of it down to UTM if we so desired. This approach, however, would obviously be a less interesting result. We opted for something towards this interesting side of the spectrum. We kept all of the implementation details which made UTM meaningfully different from MTG, but stripped out cloaking states, tapping, and turn-taking, which we saw as contributing nothing meaningful to the final product. 
+In initializing our work, MTG was definitely more difficult than UTM and MTG, as we now had several layers of choices to make- how much of the card game proper should we implement into our Turing machine emulator? It has turn-taking, cloaking states, tapping states, and other details- not to mention that this MTG Turing machine takes a considerable about of in-game setup to pull off, utilizing many modifier cards from across the game's long run[^5]. If our models of MTG are too high-level, we risk failing to achieve much in the way of reasoning about their Turing completeness in relation to UTM. Many, many reductions would have to take place, and the final result would be a computationally heavy proof indeed. On the other hand, we may use a more reduced representation of MTG. At its most basic level, this MTG TM is, after all, a UTM[^6]- and we might implicitly reduce nearly all of it down to UTM if we so desired. This approach, however, obviously makes for a less interesting result. We opted for something towards this interesting side of the spectrum. We keep all of the implementation details which made UTM meaningfully different from MTG, but strip out cloaking states, tapping, and turn-taking, which we saw as contributing nothing meaningful to the final product. 
+
+[^4]: (Moore, 2014)
+[^5]:(Churchill et al., 2019)
+[^6]: ibid.
+
+
+
+## References
+
+Moore, J Strother. 2014. “Proof Pearl: Proving a Simple Von Neumann  Machine Turing Complete.” In Interactive Theorem Proving, 406–20.  Springer International Publishing.  https://doi.org/10.1007/978-3-319-08970-6_26.
+
+Churchill, Alex, Stella Biderman, and Austin Herrick. “Magic: The Gathering Is Turing Complete,” April 23, 2019. https://arxiv.org/abs/1904.09828. 
+
+Rogozhin, Y. (1996). Small universal Turing machines. Theoretical  Computer Science, 168(2), 215–240.  https://doi.org/10.1016/s0304-3975(96)00077-1
 
 
 
