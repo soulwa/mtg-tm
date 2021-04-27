@@ -2,7 +2,7 @@
 ### Authors: Leonid Belyaev and Samuel Lyon
 
 # Introduction
-The aim of our project is to demonstrate that the game Magic: The Gathering (henceforth MTG)is capable of embedding a Universal Turing machine, and is thus both Turing complete in its ruleset and undecidable. Our project specifically proves that operations on a sequence of "creature tokens", cards in the game which encode symbols on a Turing machine, leave the sequence of cards **well-formed**: each time the game advances analogously to the UTM(2, 18), the cards describe a properly constructed input tape for a Turing machine.
+The aim of our project is to demonstrate that the game Magic: The Gathering (henceforth MTG) is capable of embedding a Universal Turing machine, and is thus both Turing complete in its ruleset and undecidable. Our project specifically proves that operations on a sequence of "creature tokens", cards in the game which encode symbols on a Turing machine, leave the sequence of cards **well-formed**: each time the game advances analogously to the UTM(2, 18), the cards describe a properly constructed input tape for a Turing machine.
 
 Our project was completed in ACL2, and requires a great deal of lemmata to get working. We develop an interpreter for a UTM(2, 18), or a Universal Turing machine with 2 states and 18 symbols, as described in Yurii Rogozhin's *Small universal Turing machines*.[^1] We use existing interpreters, such as the one found [here](http://www.nearly42.org/misc/tm/tm.html) and on [Replit](https://repl.it/@Quantumplation/UTM218) to ensure the soundness of our interpreter, since it serves as the source of truth for our project.
 
@@ -45,10 +45,6 @@ We reason about the left and right halves of the tape, ensuring that they are we
 Finally, we move into reasoning about `infest` and `move`, the functions that actually drive the computation, and generate the new tape. As `:instances` of previous results, we show that infest does not modify the left or right halves of the tape- only the head. Further, changing the head afterwards does not modify the the and right halves of the tape.
 
 The remaining piece is to reason about the well-formedness of `move`. However, we found this result very challenging, and elected to `skip-proofs` it- to demonstrate it from smaller lemmas would require more invariants to be maintained over the structure of `mtgi`, which we elected to avoid.
-
-
-
-
 
 ## Results
 
