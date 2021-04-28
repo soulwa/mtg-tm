@@ -230,7 +230,7 @@
     ((consp x) (and (utm-symbolp (first x))
                     (half-tapep (rest x))))))
                     
-(ACL2s::check= (not (half-tapep '(c c c))) nil)
+(ACL2s::check= (half-tapep '(c c c)) t)
 (ACL2s::check= (half-tapep '(1 2 3)) nil)
 
 ;; represents a full tape: 
@@ -242,7 +242,7 @@
     (half-tapep (first x))
     (half-tapep (rest x))))
     
-(ACL2s::check= (not (tapep '((c c c) (c c c)))) nil)
+(ACL2s::check= (tapep '((c c c) (c c c))) nil)
 
 ;; rev1 based on tmi-reductions.lisp
 ;; this function adds each element of x to a in reverse order
@@ -258,7 +258,7 @@
 (defun show-tape (tape)
   (cond ((consp tape)
          (rev1 (car tape)
-                  (cons '[ (cons (sym (cdr tape)) (cons '] (cdr (cdr tape)))))))
+                  (cons '[ (cons (sym (second tape)) (cons '] (cdr (second tape)))))))
         (t nil)))
         
 (ACL2s::check= (show-tape '( (c2 1 b) (b3 b2 c)))
@@ -330,17 +330,3 @@
 
 (defun haltedp (tape)
   (equal (tape-head tape) 'HALT))
-
-;; everything up to here submits
-
-;; will likely need additional lemmas
-;; refer to moore's paper for these?
-(defthm utmi-stays-terminated
-  (implies
-    (and
-      (utm-statep st)
-      (tapep tape)
-      (natp n)
-      (natp m)
-      (haltedp (utmi st tape *utm-2-18* n)))
-    (haltedp (utmi st tape *utm-2-18* (+ m n)))))
